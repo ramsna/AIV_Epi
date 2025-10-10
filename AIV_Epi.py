@@ -8,7 +8,7 @@ import streamlit as st
 import gdown
 import pydeck as pdk
 
-st.set_page_config(page_title="Clasificador Influenza A ", layout="wide")
+st.set_page_config(page_title="Clasificador Influenza A", layout="wide")
 
 # =========================
 # Helpers
@@ -274,5 +274,6 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
