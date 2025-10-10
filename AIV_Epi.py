@@ -247,39 +247,41 @@ with col_map:
     def color_by_host(h):
         return {"Aves":[66,165,245], "Cerdos":[239,83,80], "Humano":[102,187,106]}.get(h, [25,118,210])
 
-    if not df_map.empty:
-        df_map["color"] = df_map["Predicho"].apply(color_by_host)
-        lat_center = float(df_map["Lat"].mean())
-        lon_center = float(df_map["Lon"].mean())
-        layer = pdk.Layer(
-            "ScatterplotLayer",
-            data=df_map,
-            get_position='[Lon, Lat]',
-            get_radius=7000,
-            get_fill_color="color",
-            pickable=True
-        )
-        tooltip = {
-            "html": "<b>ID:</b> {ID} <br/>"
-                    "<b>Hosp. declarado:</b> {Hospedero} <br/>"
-                    "<b>Predicho:</b> {Predicho} <br/>"
-                    "<b>Subtipo:</b> {Subtipo} <br/>"
-                    "<b>Patogenicidad:</b> {Patogenicidad}",
-            "style": {"backgroundColor":"white","color":"black"}
-        }
-        st.pydeck_chart(pdk.Deck(
-            initial_view_state=pdk.ViewState(latitude=lat_center, longitude=lon_center, zoom=4),
-            layers=[layer],
-            tooltip=tooltip,
-            map_style=None
-        ))
-    else:
-        st.pydeck_chart(pdk.Deck(
-            initial_view_state=pdk.ViewState(latitude=-32.5, longitude=-55.8, zoom=4),
-            layers=[],
-            map_style=None
-        ))
-        st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+if not df_map.empty:
+    # crea un alias sin espacios para usar en pydeck
+    df_map["Predicho"] = df_map["Hospedero origen (predicho)"]
+
+    df_map["color"] = df_map["Predicho"].apply(color_by_host)
+    lat_center = float(df_map["Lat"].mean())
+    lon_center = float(df_map["Lon"].mean())
+
+    layer = pdk.Layer(
+        "ScatterplotLayer",
+        data=df_map,
+        get_position='[Lon, Lat]',
+        get_radius=7000,
+        get_fill_color="color",
+        pickable=True
+    )
+    tooltip = {
+        "html": (
+            "<b>ID:</b> {ID} <br/>"
+            "<b>Hosp. declarado:</b> {Hospedero} <br/>"
+            "<b>Predicho:</b> {Predicho} <br/>"
+            "<b>Subtipo:</b> {Subtipo} <br/>"
+            "<b>Patogenicidad:</b> {Patogenicidad}"
+        ),
+        "style": {"backgroundColor":"white","color":"black"}
+    }
+    st.pydeck_chart(pdk.Deck(
+        initial_view_state=pdk.ViewState(latitude=lat_center, longitude=lon_center, zoom=4),
+        layers=[layer],
+        tooltip=tooltip,
+        map_style=None
+    ))
+
+
+
 
 
 
