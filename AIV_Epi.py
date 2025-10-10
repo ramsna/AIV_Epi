@@ -1,15 +1,14 @@
 # aiv_app_streamlit.py
-import streamlit as st
-st.set_page_config(page_title="Clasificador Influenza A – MGAP DILAVE", layout="wide")
-
-import pandas as pd
-import numpy as np
-import joblib
+import os, zipfile, shutil, tempfile
 import itertools
-import os
-import zipfile
+import numpy as np
+import pandas as pd
+import joblib
+import streamlit as st
 import gdown
 import pydeck as pdk
+
+st.set_page_config(page_title="Clasificador Influenza A – MGAP DILAVE", layout="wide")
 
 # =========================
 # Helpers
@@ -54,13 +53,7 @@ def detectar_sitio_clivaje(secuencia, motivos, ventana_max=14):
 # =========================
 # Descarga de modelos (Google Drive + gdown)
 # =========================
-# --- al inicio del archivo ---
-import os, zipfile, shutil, tempfile
-import streamlit as st
-import gdown
-
-# ⚠️ SOLO EL ID (sin /view, sin ?usp=...)
-DRIVE_ID = "1orIsijhlHdxrr8FjYnaEG6_5z24VOnFn"   # <-- tu ID real
+DRIVE_ID = "1orIsijhlHdxrr8FjYnaEG6_5z24VOnFn"   # <-- solo el ID
 DEST_DIR = "modelos"
 TMP_ZIP  = "modelos_tmp.zip"
 
@@ -76,19 +69,15 @@ def _have_all_in(path: str) -> bool:
 
 @st.cache_data(show_spinner=True)
 def ensure_modelos_drive() -> str:
-    # 1) si ya están, listo
     if _have_all_in(DEST_DIR):
         return DEST_DIR
 
     os.makedirs(DEST_DIR, exist_ok=True)
-    # Limpio un zip viejo si quedó
     if os.path.exists(TMP_ZIP):
         try: os.remove(TMP_ZIP)
         except OSError: pass
 
-    st.info("📦 Descargando modelos desde Google Drive… (revisa que el archivo esté compartido como 'Cualquiera con el enlace')")
-
-    # 2) intento descargar por ID
+    st.info("📦 Descargando modelos desde Google Drive… (asegurate de compartir como 'Cualquiera con el enlace')")
     ok = False
     try:
         gdown.download(id=DRIVE_ID, output=TMP_ZIP, quiet=False, use_cookies=False)
@@ -96,7 +85,6 @@ def ensure_modelos_drive() -> str:
     except Exception:
         ok = False
 
-    # 3) fallback por URL “uc?id=…”
     if not ok:
         try:
             url = f"https://drive.google.com/uc?id={DRIVE_ID}"
@@ -106,46 +94,35 @@ def ensure_modelos_drive() -> str:
             ok = False
 
     if not ok:
-        raise RuntimeError(
-            "No pude descargar el ZIP desde Drive. "
-            "Verifica el ID y que el archivo esté compartido (Cualquiera con el enlace)."
-        )
+        raise RuntimeError("No pude descargar el ZIP desde Drive. Revisa el ID y el permiso de enlace.")
 
-    # 4) extraer en un temp y mover lo necesario
     with tempfile.TemporaryDirectory() as tmpdir:
         if not zipfile.is_zipfile(TMP_ZIP):
-            raise RuntimeError("El archivo descargado no es un ZIP válido. ¿Seguro que el archivo en Drive es .zip?")
+            raise RuntimeError("El archivo descargado no es un ZIP válido.")
         with zipfile.ZipFile(TMP_ZIP, "r") as z:
             z.extractall(tmpdir)
 
-        # Buscar los archivos requeridos en cualquier subcarpeta del ZIP
         found = {}
         for root, _, files in os.walk(tmpdir):
             for name in files:
                 if name in REQUIRED and name not in found:
                     found[name] = os.path.join(root, name)
 
-        # Copiar a DEST_DIR
         for req in REQUIRED:
             if req in found:
-                shutil.copy2(found[req], os.path.join(DEST_DIR, req))
+                os.makedirs(DEST_DIR, exist_ok=True)
+                dest = os.path.join(DEST_DIR, req)
+                if not os.path.exists(dest):
+                    shutil.copy2(found[req], dest)
 
-    # 5) limpiar zip temporal
     try: os.remove(TMP_ZIP)
     except OSError: pass
 
-    # 6) verificación final
     if not _have_all_in(DEST_DIR):
         faltan = [f for f in REQUIRED if not os.path.exists(os.path.join(DEST_DIR, f))]
-        raise RuntimeError(
-            "Faltan archivos luego de extraer el ZIP: "
-            + ", ".join(faltan)
-            + ". Verifica el contenido del ZIP en Drive."
-        )
+        raise RuntimeError("Faltan archivos luego de extraer: " + ", ".join(faltan))
 
     return DEST_DIR
-
-
 
 modelos_dir = ensure_modelos_drive()
 
@@ -179,13 +156,12 @@ with st.sidebar:
     st.header("⚙️ Configuración")
     modelos_dir = st.text_input(
         "Carpeta de modelos",
-        value=modelos_dir,  # ya apunta a 'modelos' descargado
+        value=modelos_dir,
         help="Debe contener scaler.pkl, SVM_best_model.pkl, KNN_best_model.pkl y cleavage_sites_H5_H7_extended.csv",
     )
     csv_path = st.text_input("Archivo CSV de resultados", value="resultados_influenza.csv")
-    st.caption("Si ves advertencias de versión de scikit-learn, es porque los modelos se entrenaron con otra versión.")
+    st.caption("Si ves advertencias de versión de scikit-learn, es por diferencias con la versión usada al entrenar.")
 
-# Cargar modelos/motivos
 try:
     scaler_subtipo, model_subtipo, scaler_host, model_host, motivos = cargar_modelos_y_tablas(modelos_dir)
     modelos_ok = True
@@ -193,35 +169,27 @@ except Exception as e:
     modelos_ok = False
     st.error(f"No pude cargar modelos/archivos desde **{modelos_dir}**. Detalle: {e}")
 
-# Estado de resultados
 cols = ["ID", "Hospedero", "Predicho", "Subtipo", "Patogenicidad", "Lat", "Lon"]
 if "resultados" not in st.session_state:
     st.session_state["resultados"] = cargar_csv(csv_path, cols)
 
-# Layout principal
 col_form, col_map = st.columns([0.38, 0.62], gap="large")
 
 with col_form:
     st.subheader("📥 Datos de la muestra")
-
     id_muestra = st.text_input("ID de muestra")
     hosp_decl  = st.text_input("Hospedero declarado (texto libre)")
     c1, c2 = st.columns(2)
-    with c1:
-        lat = st.text_input("Latitud (ej: -34.9)")
-    with c2:
-        lon = st.text_input("Longitud (ej: -56.2)")
+    with c1: lat = st.text_input("Latitud (ej: -34.9)")
+    with c2: lon = st.text_input("Longitud (ej: -56.2)")
     sec = st.text_area("Secuencia FASTA (sin encabezado)", height=140, placeholder="Pegá aquí la secuencia…")
 
-    puede_clasificar = modelos_ok and all([id_muestra.strip(), hosp_decl.strip(), lat.strip(), lon.strip(), sec.strip()])
-    btn = st.button("🔍 Clasificar y agregar al mapa/tabla", use_container_width=True, disabled=not puede_clasificar)
-
-    if btn:
+    puede = modelos_ok and all([id_muestra.strip(), hosp_decl.strip(), lat.strip(), lon.strip(), sec.strip()])
+    if st.button("🔍 Clasificar y agregar al mapa/tabla", use_container_width=True, disabled=not puede):
         try:
-            latf = float(lat)
-            lonf = float(lon)
-
+            latf, lonf = float(lat), float(lon)
             DPC = calcular_DPC(sec)
+
             X1 = scaler_subtipo.transform(DPC)
             subtipo = f"H{int(model_subtipo.predict(X1)[0]) + 1}"
 
@@ -230,10 +198,7 @@ with col_form:
             host_pred = mapa_host[int(model_host.predict(X2)[0])]
 
             motivos_det = detectar_sitio_clivaje(sec, motivos) if subtipo in ["H5", "H7"] else ""
-            if subtipo in ["H5", "H7"]:
-                patogenicidad = "Alta" if ("RRR" in motivos_det or "KRR" in motivos_det) else "Baja"
-            else:
-                patogenicidad = "No aplica"
+            patogenicidad = "Alta" if (subtipo in ["H5", "H7"] and ("RRR" in motivos_det or "KRR" in motivos_det)) else ("No aplica" if subtipo not in ["H5","H7"] else "Baja")
 
             nuevo = {
                 "ID": id_muestra.strip(),
@@ -262,38 +227,24 @@ with col_form:
                     st.write("**Motivos detectados:**")
                     st.code(motivos_det, language="text")
 
-        except Exception as e:
-            st.error(f"Ocurrió un error al clasificar: {e}")
-
     st.markdown("---")
     st.subheader("📄 Resultados (CSV en disco)")
-    st.dataframe(
-        st.session_state["resultados"],
-        width="stretch",
-        hide_index=True
-    )
+    st.dataframe(st.session_state["resultados"], width="stretch", hide_index=True)
 
 with col_map:
     st.subheader("🗺️ Mapa")
-
     df_map = st.session_state["resultados"].copy()
-    # Convertir coords a float válidas
-    for c in ("Lat", "Lon"):
+    for c in ("Lat","Lon"):
         df_map[c] = pd.to_numeric(df_map[c], errors="coerce")
-    df_map = df_map.dropna(subset=["Lat", "Lon"])
+    df_map = df_map.dropna(subset=["Lat","Lon"])
 
     def color_by_host(h):
-        return {
-            "Aves":   [66, 165, 245],
-            "Cerdos": [239, 83, 80],
-            "Humano": [102, 187, 106],
-        }.get(h, [25, 118, 210])
+        return {"Aves":[66,165,245], "Cerdos":[239,83,80], "Humano":[102,187,106]}.get(h, [25,118,210])
 
     if not df_map.empty:
         df_map["color"] = df_map["Predicho"].apply(color_by_host)
         lat_center = float(df_map["Lat"].mean())
         lon_center = float(df_map["Lon"].mean())
-
         layer = pdk.Layer(
             "ScatterplotLayer",
             data=df_map,
@@ -302,20 +253,16 @@ with col_map:
             get_fill_color="color",
             pickable=True
         )
-
         tooltip = {
             "html": "<b>ID:</b> {ID} <br/>"
                     "<b>Hosp. declarado:</b> {Hospedero} <br/>"
                     "<b>Predicho:</b> {Predicho} <br/>"
                     "<b>Subtipo:</b> {Subtipo} <br/>"
                     "<b>Patogenicidad:</b> {Patogenicidad}",
-            "style": {"backgroundColor": "white", "color": "black"}
+            "style": {"backgroundColor":"white","color":"black"}
         }
-
         st.pydeck_chart(pdk.Deck(
-            initial_view_state=pdk.ViewState(
-                latitude=lat_center, longitude=lon_center, zoom=4
-            ),
+            initial_view_state=pdk.ViewState(latitude=lat_center, longitude=lon_center, zoom=4),
             layers=[layer],
             tooltip=tooltip,
             map_style=None
@@ -327,8 +274,3 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
-
-
-
-
-
