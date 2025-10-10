@@ -46,6 +46,53 @@ def detectar_sitio_clivaje(secuencia, motivos, ventana_max=14):
                             f"- Motivo: {motivo} | Subtipo: {subtipo} | Clado/Tipo: {clado_tipo}"
                         )
     return "\n".join(encontrados) if encontrados else "Ningún motivo detectado"
+import os, zipfile
+import streamlit as st
+import gdown
+
+# 👇 Reemplaza por el ID real de tu Drive
+DRIVE_ID = "1CMLlczo-eWmFDVEChozS08W-JWwuFIFw/view?usp=sharing"
+URL = f"https://drive.google.com/file/d/1CMLlczo-eWmFDVEChozS08W-JWwuFIFw/view?usp=sharing"
+
+DEST_DIR = "modelos"
+TMP_ZIP  = "modelos_tmp.zip"
+
+@st.cache_data(show_spinner=True)
+def ensure_modelos_drive():
+    # Si ya están extraídos, usar directo
+    necesarios = [
+        "scaler.pkl",
+        "SVM_best_model.pkl",
+        "KNN_best_model.pkl",
+        "cleavage_sites_H5_H7_extended.csv",
+    ]
+    if all(os.path.exists(os.path.join(DEST_DIR, f)) for f in necesarios):
+        return DEST_DIR
+
+    os.makedirs(DEST_DIR, exist_ok=True)
+
+    # Descargar ZIP con progreso
+    st.info("📦 Descargando modelos desde Google Drive…")
+    gdown.download(URL, TMP_ZIP, quiet=False)
+
+    # Extraer
+    with zipfile.ZipFile(TMP_ZIP, "r") as z:
+        z.extractall(DEST_DIR)
+
+    # Limpiar
+    try:
+        os.remove(TMP_ZIP)
+    except OSError:
+        pass
+
+    # Chequeo final
+    if not all(os.path.exists(os.path.join(DEST_DIR, f)) for f in necesarios):
+        raise RuntimeError("Faltan archivos de modelos luego de extraer el ZIP.")
+
+    return DEST_DIR
+
+# Llamalo donde cargás los modelos:
+modelos_dir = ensure_modelos_drive()
 
 @st.cache_resource(show_spinner=False)
 def cargar_modelos_y_tablas(model_dir: str):
@@ -232,3 +279,4 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
