@@ -1,7 +1,5 @@
 # aiv_app_streamlit.py
 import streamlit as st
-st.set_page_config(page_title="Clasificador Influenza A", layout="wide")
-
 import pandas as pd
 import numpy as np
 import joblib
@@ -10,7 +8,9 @@ import os
 import zipfile
 import gdown
 import pydeck as pdk
-set.title('Clasificador de Influenza tipo A)
+
+st.set_page_config(page_title="Clasificador Influenza A", layout="wide")
+
 # =========================
 # Helpers
 # =========================
@@ -270,5 +270,6 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
