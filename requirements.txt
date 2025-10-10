@@ -1,0 +1,12 @@
+customtkinter==5.2.2
+tkintermapview==1.29
+pandas==2.2.2
+joblib==1.4.2
+scikit-learn==1.6.1
+scipy==1.13.1
+
+folium~=0.20.0
+future~=1.0.0
+streamlit~=1.50.0
+numpy~=1.26.4
+pydeck~=0.9.1
