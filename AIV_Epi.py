@@ -55,7 +55,7 @@ def detectar_sitio_clivaje(secuencia, motivos, ventana_max=14):
 # Descarga de modelos (Google Drive + gdown)
 # =========================
 # 👇 PONÉ SOLO EL ID (ej: "1AbCDeFG..."), NO la URL completa
-DRIVE_ID = "1CMLlczo-eWmFDVEChozS08W-JWwuFIFw"   # <-- reemplazá si cambia
+DRIVE_ID = "1orIsijhlHdxrr8FjYnaEG6_5z24VOnFn"   # <-- reemplazá si cambia
 URL = f"https://drive.google.com/uc?id={DRIVE_ID}"
 
 DEST_DIR = "modelos"
@@ -270,5 +270,6 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
