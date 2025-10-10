@@ -1,10 +1,14 @@
 # aiv_app_streamlit.py
 import streamlit as st
+st.set_page_config(page_title="Clasificador Influenza A – MGAP DILAVE", layout="wide")
+
 import pandas as pd
 import numpy as np
 import joblib
 import itertools
 import os
+import zipfile
+import gdown
 import pydeck as pdk
 
 # =========================
@@ -46,20 +50,19 @@ def detectar_sitio_clivaje(secuencia, motivos, ventana_max=14):
                             f"- Motivo: {motivo} | Subtipo: {subtipo} | Clado/Tipo: {clado_tipo}"
                         )
     return "\n".join(encontrados) if encontrados else "Ningún motivo detectado"
-import os, zipfile
-import streamlit as st
-import gdown
 
-# 👇 Reemplaza por el ID real de tu Drive
-DRIVE_ID = "1CMLlczo-eWmFDVEChozS08W-JWwuFIFw/view?usp=sharing"
-URL = f"https://drive.google.com/file/d/1CMLlczo-eWmFDVEChozS08W-JWwuFIFw/view?usp=sharing"
+# =========================
+# Descarga de modelos (Google Drive + gdown)
+# =========================
+# 👇 PONÉ SOLO EL ID (ej: "1AbCDeFG..."), NO la URL completa
+DRIVE_ID = "1CMLlczo-eWmFDVEChozS08W-JWwuFIFw"   # <-- reemplazá si cambia
+URL = f"https://drive.google.com/uc?id={DRIVE_ID}"
 
 DEST_DIR = "modelos"
 TMP_ZIP  = "modelos_tmp.zip"
 
 @st.cache_data(show_spinner=True)
 def ensure_modelos_drive():
-    # Si ya están extraídos, usar directo
     necesarios = [
         "scaler.pkl",
         "SVM_best_model.pkl",
@@ -70,39 +73,32 @@ def ensure_modelos_drive():
         return DEST_DIR
 
     os.makedirs(DEST_DIR, exist_ok=True)
-
-    # Descargar ZIP con progreso
     st.info("📦 Descargando modelos desde Google Drive…")
+    # gdown acepta URL uc?id=... o directamente id=...
     gdown.download(URL, TMP_ZIP, quiet=False)
 
-    # Extraer
     with zipfile.ZipFile(TMP_ZIP, "r") as z:
         z.extractall(DEST_DIR)
 
-    # Limpiar
     try:
         os.remove(TMP_ZIP)
     except OSError:
         pass
 
-    # Chequeo final
     if not all(os.path.exists(os.path.join(DEST_DIR, f)) for f in necesarios):
         raise RuntimeError("Faltan archivos de modelos luego de extraer el ZIP.")
 
     return DEST_DIR
 
-# Llamalo donde cargás los modelos:
 modelos_dir = ensure_modelos_drive()
 
 @st.cache_resource(show_spinner=False)
 def cargar_modelos_y_tablas(model_dir: str):
-    # Ajustá nombres si tus ficheros tienen otros
-    import joblib, pandas as pd, os
-    scaler_subtipo = joblib.load(os.path.join(modelos_dir, "scaler.pkl"))
-    model_subtipo  = joblib.load(os.path.join(modelos_dir, "SVM_best_model.pkl"))
-    scaler_host    = joblib.load(os.path.join(modelos_dir, "scaler.pkl"))
-    model_host     = joblib.load(os.path.join(modelos_dir, "KNN_best_model.pkl"))
-    motivos        = pd.read_csv(os.path.join(modelos_dir, "cleavage_sites_H5_H7_extended.csv"))
+    scaler_subtipo = joblib.load(os.path.join(model_dir, "scaler.pkl"))
+    model_subtipo  = joblib.load(os.path.join(model_dir, "SVM_best_model.pkl"))
+    scaler_host    = joblib.load(os.path.join(model_dir, "scaler.pkl"))
+    model_host     = joblib.load(os.path.join(model_dir, "KNN_best_model.pkl"))
+    motivos        = pd.read_csv(os.path.join(model_dir, "cleavage_sites_H5_H7_extended.csv"))
     return scaler_subtipo, model_subtipo, scaler_host, model_host, motivos
 
 def guardar_csv(df: pd.DataFrame, path_csv: str):
@@ -120,18 +116,17 @@ def cargar_csv(path_csv: str, cols):
 # =========================
 # UI
 # =========================
-st.set_page_config(page_title="Clasificador Influenza A – MGAP DILAVE", layout="wide")
 st.title("🧬 Clasificador de Influenza A – MGAP DILAVE")
 
 with st.sidebar:
     st.header("⚙️ Configuración")
     modelos_dir = st.text_input(
         "Carpeta de modelos",
-        value="modelos",
+        value=modelos_dir,  # ya apunta a 'modelos' descargado
         help="Debe contener scaler.pkl, SVM_best_model.pkl, KNN_best_model.pkl y cleavage_sites_H5_H7_extended.csv",
     )
     csv_path = st.text_input("Archivo CSV de resultados", value="resultados_influenza.csv")
-    st.caption("Si ves advertencias de versión de scikit-learn, ocurre cuando los modelos se entrenaron con otra versión.")
+    st.caption("Si ves advertencias de versión de scikit-learn, es porque los modelos se entrenaron con otra versión.")
 
 # Cargar modelos/motivos
 try:
@@ -177,7 +172,6 @@ with col_form:
             mapa_host = {0: "Aves", 1: "Cerdos", 2: "Humano"}
             host_pred = mapa_host[int(model_host.predict(X2)[0])]
 
-            # Patogenicidad simple por motivo
             motivos_det = detectar_sitio_clivaje(sec, motivos) if subtipo in ["H5", "H7"] else ""
             if subtipo in ["H5", "H7"]:
                 patogenicidad = "Alta" if ("RRR" in motivos_det or "KRR" in motivos_det) else "Baja"
@@ -218,7 +212,7 @@ with col_form:
     st.subheader("📄 Resultados (CSV en disco)")
     st.dataframe(
         st.session_state["resultados"],
-        width="stretch",   # reemplaza use_container_width
+        width="stretch",
         hide_index=True
     )
 
@@ -231,18 +225,15 @@ with col_map:
         df_map[c] = pd.to_numeric(df_map[c], errors="coerce")
     df_map = df_map.dropna(subset=["Lat", "Lon"])
 
-    # Paleta por hospedero predicho
     def color_by_host(h):
         return {
-            "Aves":   [66, 165, 245],   # azul
-            "Cerdos": [239, 83, 80],    # rojo
-            "Humano": [102, 187, 106],  # verde
+            "Aves":   [66, 165, 245],
+            "Cerdos": [239, 83, 80],
+            "Humano": [102, 187, 106],
         }.get(h, [25, 118, 210])
 
     if not df_map.empty:
         df_map["color"] = df_map["Predicho"].apply(color_by_host)
-
-        # Vista inicial
         lat_center = float(df_map["Lat"].mean())
         lon_center = float(df_map["Lon"].mean())
 
@@ -250,7 +241,7 @@ with col_map:
             "ScatterplotLayer",
             data=df_map,
             get_position='[Lon, Lat]',
-            get_radius=7000,             # radio en metros (ajustá a gusto)
+            get_radius=7000,
             get_fill_color="color",
             pickable=True
         )
@@ -270,15 +261,12 @@ with col_map:
             ),
             layers=[layer],
             tooltip=tooltip,
-            map_style=None  # usa base por defecto (no requiere token)
+            map_style=None
         ))
     else:
-        # Mapa vacío centrado en Uruguay como default
         st.pydeck_chart(pdk.Deck(
             initial_view_state=pdk.ViewState(latitude=-32.5, longitude=-55.8, zoom=4),
             layers=[],
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
-
-
