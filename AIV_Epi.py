@@ -10,7 +10,7 @@ import os
 import zipfile
 import gdown
 import pydeck as pdk
-
+set.title('Clasificador de Influenza tipo A)
 # =========================
 # Helpers
 # =========================
@@ -270,4 +270,5 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
