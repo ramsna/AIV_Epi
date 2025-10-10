@@ -54,105 +54,97 @@ def detectar_sitio_clivaje(secuencia, motivos, ventana_max=14):
 # =========================
 # Descarga de modelos (Google Drive + gdown)
 # =========================
-# 👇 PONÉ SOLO EL ID (ej: "1AbCDeFG..."), NO la URL completa
-# === Descarga y preparación de modelos desde Google Drive ===
-import os, zipfile, shutil
+# --- al inicio del archivo ---
+import os, zipfile, shutil, tempfile
 import streamlit as st
 import gdown
 
-# PONÉ SOLO EL ID (sin /view)
-DRIVE_ID = "1orIsijhlHdxrr8FjYnaEG6_5z24VOnFn"  # <-- cambia esto
+# ⚠️ SOLO EL ID (sin /view, sin ?usp=...)
+DRIVE_ID = "1orIsijhlHdxrr8FjYnaEG6_5z24VOnFn"   # <-- tu ID real
 DEST_DIR = "modelos"
-TMP_ZIP  = "modelos_v1.zip"
+TMP_ZIP  = "modelos_tmp.zip"
 
-NECESARIOS = {
-    "scaler.pkl": "scaler.pkl",
-    "SVM_best_model.pkl": "SVM_best_model.pkl",
-    "KNN_best_model.pkl": "KNN_best_model.pkl",
-    "cleavage_sites_H5_H7_extended.csv": ("cleavage_sites_H5_H7_extended.csv",
-                                          "cleavage_sites_H5_H7_extended (1).csv",
-                                          "cleavage_sites_H5_H7.csv"),
+REQUIRED = {
+    "scaler.pkl",
+    "SVM_best_model.pkl",
+    "KNN_best_model.pkl",
+    "cleavage_sites_H5_H7_extended.csv",
 }
 
-def _presentes():
-    for key, alias in NECESARIOS.items():
-        if isinstance(alias, tuple):
-            if not any(os.path.exists(os.path.join(DEST_DIR, a)) for a in alias):
-                return False
-        else:
-            if not os.path.exists(os.path.join(DEST_DIR, alias)):
-                return False
-    return True
-
-def _copiar_si_falta(src_path, dst_path):
-    os.makedirs(os.path.dirname(dst_path), exist_ok=True)
-    if os.path.exists(src_path) and not os.path.exists(dst_path):
-        shutil.copy2(src_path, dst_path)
+def _have_all_in(path: str) -> bool:
+    return all(os.path.exists(os.path.join(path, f)) for f in REQUIRED)
 
 @st.cache_data(show_spinner=True)
 def ensure_modelos_drive() -> str:
-    if _presentes():
+    # 1) si ya están, listo
+    if _have_all_in(DEST_DIR):
         return DEST_DIR
 
     os.makedirs(DEST_DIR, exist_ok=True)
+    # Limpio un zip viejo si quedó
+    if os.path.exists(TMP_ZIP):
+        try: os.remove(TMP_ZIP)
+        except OSError: pass
 
-    # 1) Descargar
-    st.info("📦 Descargando modelos desde Google Drive…")
+    st.info("📦 Descargando modelos desde Google Drive… (revisa que el archivo esté compartido como 'Cualquiera con el enlace')")
+
+    # 2) intento descargar por ID
     ok = False
-    err = None
     try:
-        # forma recomendada: por ID
         gdown.download(id=DRIVE_ID, output=TMP_ZIP, quiet=False, use_cookies=False)
         ok = os.path.exists(TMP_ZIP) and os.path.getsize(TMP_ZIP) > 0
-    except Exception as e:
-        err = e
+    except Exception:
+        ok = False
 
+    # 3) fallback por URL “uc?id=…”
     if not ok:
-        # intento alternativo por URL uc?id=
         try:
             url = f"https://drive.google.com/uc?id={DRIVE_ID}"
             gdown.download(url, TMP_ZIP, quiet=False, use_cookies=False)
             ok = os.path.exists(TMP_ZIP) and os.path.getsize(TMP_ZIP) > 0
-        except Exception as e2:
-            err = e2
+        except Exception:
+            ok = False
 
     if not ok:
         raise RuntimeError(
-            "No pude descargar el ZIP de modelos desde Drive.\n"
-            "Verifica que el archivo esté compartido como 'Cualquiera con el enlace' "
-            "y que el DRIVE_ID sea correcto.\n\n"
-            f"Último error: {err}"
+            "No pude descargar el ZIP desde Drive. "
+            "Verifica el ID y que el archivo esté compartido (Cualquiera con el enlace)."
         )
 
-    # 2) Extraer a carpeta temporal
-    tmp_extract = os.path.join(DEST_DIR, "_tmp_extract")
-    os.makedirs(tmp_extract, exist_ok=True)
-    with zipfile.ZipFile(TMP_ZIP, "r") as z:
-        z.extractall(tmp_extract)
+    # 4) extraer en un temp y mover lo necesario
+    with tempfile.TemporaryDirectory() as tmpdir:
+        if not zipfile.is_zipfile(TMP_ZIP):
+            raise RuntimeError("El archivo descargado no es un ZIP válido. ¿Seguro que el archivo en Drive es .zip?")
+        with zipfile.ZipFile(TMP_ZIP, "r") as z:
+            z.extractall(tmpdir)
 
-    # 3) Reubicar: buscar recursivo y copiar a ./modelos/
-    for root, _, files in os.walk(tmp_extract):
-        for f in files:
-            src = os.path.join(root, f)
-            # pkl fijos
-            for must in ["scaler.pkl", "SVM_best_model.pkl", "KNN_best_model.pkl"]:
-                if f.lower() == must.lower():
-                    _copiar_si_falta(src, os.path.join(DEST_DIR, must))
-            # csv (nombres alternativos)
-            if f.lower().startswith("cleavage_sites_h5_h7"):
-                _copiar_si_falta(src, os.path.join(DEST_DIR, "cleavage_sites_H5_H7_extended.csv"))
+        # Buscar los archivos requeridos en cualquier subcarpeta del ZIP
+        found = {}
+        for root, _, files in os.walk(tmpdir):
+            for name in files:
+                if name in REQUIRED and name not in found:
+                    found[name] = os.path.join(root, name)
 
-    # 4) Limpieza
+        # Copiar a DEST_DIR
+        for req in REQUIRED:
+            if req in found:
+                shutil.copy2(found[req], os.path.join(DEST_DIR, req))
+
+    # 5) limpiar zip temporal
     try: os.remove(TMP_ZIP)
     except OSError: pass
-    shutil.rmtree(tmp_extract, ignore_errors=True)
 
-    if not _presentes():
+    # 6) verificación final
+    if not _have_all_in(DEST_DIR):
+        faltan = [f for f in REQUIRED if not os.path.exists(os.path.join(DEST_DIR, f))]
         raise RuntimeError(
-            "Faltan archivos de modelos luego de extraer el ZIP. "
-            "Asegúrate de que el ZIP contenga los 3 .pkl y el CSV (en cualquier subcarpeta)."
+            "Faltan archivos luego de extraer el ZIP: "
+            + ", ".join(faltan)
+            + ". Verifica el contenido del ZIP en Drive."
         )
+
     return DEST_DIR
+
 
 
 modelos_dir = ensure_modelos_drive()
@@ -335,6 +327,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
