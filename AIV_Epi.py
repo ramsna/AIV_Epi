@@ -203,7 +203,7 @@ with col_form:
             nuevo = {
                 "ID": id_muestra.strip(),
                 "Hospedero": hosp_decl.strip(),
-                "Predicho": host_pred,
+                "Hospedero origen (predicho)": host_pred,
                 "Subtipo": subtipo,
                 "Patogenicidad": patogenicidad,
                 "Lat": f"{latf}",
@@ -274,4 +274,5 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
