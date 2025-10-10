@@ -97,11 +97,12 @@ modelos_dir = ensure_modelos_drive()
 @st.cache_resource(show_spinner=False)
 def cargar_modelos_y_tablas(model_dir: str):
     # Ajustá nombres si tus ficheros tienen otros
-    scaler_subtipo = joblib.load(os.path.join(model_dir, "scaler.pkl"))
-    model_subtipo  = joblib.load(os.path.join(model_dir, "SVM_best_model.pkl"))
-    scaler_host    = joblib.load(os.path.join(model_dir, "scaler.pkl"))
-    model_host     = joblib.load(os.path.join(model_dir, "KNN_best_model.pkl"))
-    motivos        = pd.read_csv(os.path.join(model_dir, "cleavage_sites_H5_H7_extended.csv"))
+    import joblib, pandas as pd, os
+    scaler_subtipo = joblib.load(os.path.join(modelos_dir, "scaler.pkl"))
+    model_subtipo  = joblib.load(os.path.join(modelos_dir, "SVM_best_model.pkl"))
+    scaler_host    = joblib.load(os.path.join(modelos_dir, "scaler.pkl"))
+    model_host     = joblib.load(os.path.join(modelos_dir, "KNN_best_model.pkl"))
+    motivos        = pd.read_csv(os.path.join(modelos_dir, "cleavage_sites_H5_H7_extended.csv"))
     return scaler_subtipo, model_subtipo, scaler_host, model_host, motivos
 
 def guardar_csv(df: pd.DataFrame, path_csv: str):
@@ -279,4 +280,5 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
