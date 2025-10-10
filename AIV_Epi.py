@@ -55,40 +55,105 @@ def detectar_sitio_clivaje(secuencia, motivos, ventana_max=14):
 # Descarga de modelos (Google Drive + gdown)
 # =========================
 # 👇 PONÉ SOLO EL ID (ej: "1AbCDeFG..."), NO la URL completa
-DRIVE_ID = "1orIsijhlHdxrr8FjYnaEG6_5z24VOnFn"   # <-- reemplazá si cambia
-URL = f"https://drive.google.com/uc?id={DRIVE_ID}"
+# === Descarga y preparación de modelos desde Google Drive ===
+import os, zipfile, shutil
+import streamlit as st
+import gdown
 
+# PONÉ SOLO EL ID (sin /view)
+DRIVE_ID = "1orIsijhlHdxrr8FjYnaEG6_5z24VOnFn"  # <-- cambia esto
 DEST_DIR = "modelos"
 TMP_ZIP  = "modelos_v1.zip"
 
+NECESARIOS = {
+    "scaler.pkl": "scaler.pkl",
+    "SVM_best_model.pkl": "SVM_best_model.pkl",
+    "KNN_best_model.pkl": "KNN_best_model.pkl",
+    "cleavage_sites_H5_H7_extended.csv": ("cleavage_sites_H5_H7_extended.csv",
+                                          "cleavage_sites_H5_H7_extended (1).csv",
+                                          "cleavage_sites_H5_H7.csv"),
+}
+
+def _presentes():
+    for key, alias in NECESARIOS.items():
+        if isinstance(alias, tuple):
+            if not any(os.path.exists(os.path.join(DEST_DIR, a)) for a in alias):
+                return False
+        else:
+            if not os.path.exists(os.path.join(DEST_DIR, alias)):
+                return False
+    return True
+
+def _copiar_si_falta(src_path, dst_path):
+    os.makedirs(os.path.dirname(dst_path), exist_ok=True)
+    if os.path.exists(src_path) and not os.path.exists(dst_path):
+        shutil.copy2(src_path, dst_path)
+
 @st.cache_data(show_spinner=True)
-def ensure_modelos_drive():
-    necesarios = [
-        "scaler.pkl",
-        "SVM_best_model.pkl",
-        "KNN_best_model.pkl",
-        "cleavage_sites_H5_H7_extended.csv",
-    ]
-    if all(os.path.exists(os.path.join(DEST_DIR, f)) for f in necesarios):
+def ensure_modelos_drive() -> str:
+    if _presentes():
         return DEST_DIR
 
     os.makedirs(DEST_DIR, exist_ok=True)
+
+    # 1) Descargar
     st.info("📦 Descargando modelos desde Google Drive…")
-    # gdown acepta URL uc?id=... o directamente id=...
-    gdown.download(URL, TMP_ZIP, quiet=False)
-
-    with zipfile.ZipFile(TMP_ZIP, "r") as z:
-        z.extractall(DEST_DIR)
-
+    ok = False
+    err = None
     try:
-        os.remove(TMP_ZIP)
-    except OSError:
-        pass
+        # forma recomendada: por ID
+        gdown.download(id=DRIVE_ID, output=TMP_ZIP, quiet=False, use_cookies=False)
+        ok = os.path.exists(TMP_ZIP) and os.path.getsize(TMP_ZIP) > 0
+    except Exception as e:
+        err = e
 
-    if not all(os.path.exists(os.path.join(DEST_DIR, f)) for f in necesarios):
-        raise RuntimeError("Faltan archivos de modelos luego de extraer el ZIP.")
+    if not ok:
+        # intento alternativo por URL uc?id=
+        try:
+            url = f"https://drive.google.com/uc?id={DRIVE_ID}"
+            gdown.download(url, TMP_ZIP, quiet=False, use_cookies=False)
+            ok = os.path.exists(TMP_ZIP) and os.path.getsize(TMP_ZIP) > 0
+        except Exception as e2:
+            err = e2
 
+    if not ok:
+        raise RuntimeError(
+            "No pude descargar el ZIP de modelos desde Drive.\n"
+            "Verifica que el archivo esté compartido como 'Cualquiera con el enlace' "
+            "y que el DRIVE_ID sea correcto.\n\n"
+            f"Último error: {err}"
+        )
+
+    # 2) Extraer a carpeta temporal
+    tmp_extract = os.path.join(DEST_DIR, "_tmp_extract")
+    os.makedirs(tmp_extract, exist_ok=True)
+    with zipfile.ZipFile(TMP_ZIP, "r") as z:
+        z.extractall(tmp_extract)
+
+    # 3) Reubicar: buscar recursivo y copiar a ./modelos/
+    for root, _, files in os.walk(tmp_extract):
+        for f in files:
+            src = os.path.join(root, f)
+            # pkl fijos
+            for must in ["scaler.pkl", "SVM_best_model.pkl", "KNN_best_model.pkl"]:
+                if f.lower() == must.lower():
+                    _copiar_si_falta(src, os.path.join(DEST_DIR, must))
+            # csv (nombres alternativos)
+            if f.lower().startswith("cleavage_sites_h5_h7"):
+                _copiar_si_falta(src, os.path.join(DEST_DIR, "cleavage_sites_H5_H7_extended.csv"))
+
+    # 4) Limpieza
+    try: os.remove(TMP_ZIP)
+    except OSError: pass
+    shutil.rmtree(tmp_extract, ignore_errors=True)
+
+    if not _presentes():
+        raise RuntimeError(
+            "Faltan archivos de modelos luego de extraer el ZIP. "
+            "Asegúrate de que el ZIP contenga los 3 .pkl y el CSV (en cualquier subcarpeta)."
+        )
     return DEST_DIR
+
 
 modelos_dir = ensure_modelos_drive()
 
