@@ -186,52 +186,52 @@ with col_form:
 
     puede = modelos_ok and all([id_muestra.strip(), hosp_decl.strip(), lat.strip(), lon.strip(), sec.strip()])
     if st.button("🔍 Clasificar y agregar al mapa/tabla", use_container_width=True, disabled=not puede):
-    try:
-        latf, lonf = float(lat), float(lon)
-        DPC = calcular_DPC(sec)
-
-        X1 = scaler_subtipo.transform(DPC)
-        subtipo = f"H{int(model_subtipo.predict(X1)[0]) + 1}"
-
-        X2 = scaler_host.transform(DPC)
-        mapa_host = {0: "Aves", 1: "Cerdos", 2: "Humano"}
-        host_pred = mapa_host[int(model_host.predict(X2)[0])]
-
-        motivos_det = detectar_sitio_clivaje(sec, motivos) if subtipo in ["H5", "H7"] else ""
-        patogenicidad = (
-            "Alta" if (subtipo in ["H5", "H7"] and ("RRR" in motivos_det or "KRR" in motivos_det))
-            else ("No aplica" if subtipo not in ["H5","H7"] else "Baja")
-        )
-
-        nuevo = {
-            "ID": id_muestra.strip(),
-            "Hospedero": hosp_decl.strip(),
-            "Hospedero origen (predicho)": host_pred,
-            "Subtipo": subtipo,
-            "Patogenicidad": patogenicidad,
-            "Lat": f"{latf}",
-            "Lon": f"{lonf}",
-        }
-        st.session_state["resultados"] = (
-            pd.concat([st.session_state["resultados"], pd.DataFrame([nuevo])], ignore_index=True)
-              .fillna("")
-              .astype(str)
-        )
-
-        guardar_csv(st.session_state["resultados"], csv_path)
-
-        st.success("✅ Clasificación agregada y guardada en el CSV.")
-        with st.expander("Ver detalle de la clasificación agregada", expanded=True):
-            st.write(f"**ID:** {id_muestra}")
-            st.write(f"**Hospedero declarado:** {hosp_decl}")
-            st.write(f"**Hospedero predicho:** {host_pred}")
-            st.write(f"**Subtipo:** {subtipo}")
-            st.write(f"**Patogenicidad:** {patogenicidad}")
-            if motivos_det:
-                st.write("**Motivos detectados:**")
-                st.code(motivos_det, language="text")
-    except Exception as e:
-        st.error(f"Ocurrió un error durante la clasificación: {e}")
+        try:
+            latf, lonf = float(lat), float(lon)
+            DPC = calcular_DPC(sec)
+    
+            X1 = scaler_subtipo.transform(DPC)
+            subtipo = f"H{int(model_subtipo.predict(X1)[0]) + 1}"
+    
+            X2 = scaler_host.transform(DPC)
+            mapa_host = {0: "Aves", 1: "Cerdos", 2: "Humano"}
+            host_pred = mapa_host[int(model_host.predict(X2)[0])]
+    
+            motivos_det = detectar_sitio_clivaje(sec, motivos) if subtipo in ["H5", "H7"] else ""
+            patogenicidad = (
+                "Alta" if (subtipo in ["H5", "H7"] and ("RRR" in motivos_det or "KRR" in motivos_det))
+                else ("No aplica" if subtipo not in ["H5","H7"] else "Baja")
+            )
+    
+            nuevo = {
+                "ID": id_muestra.strip(),
+                "Hospedero": hosp_decl.strip(),
+                "Hospedero origen (predicho)": host_pred,
+                "Subtipo": subtipo,
+                "Patogenicidad": patogenicidad,
+                "Lat": f"{latf}",
+                "Lon": f"{lonf}",
+            }
+            st.session_state["resultados"] = (
+                pd.concat([st.session_state["resultados"], pd.DataFrame([nuevo])], ignore_index=True)
+                  .fillna("")
+                  .astype(str)
+            )
+    
+            guardar_csv(st.session_state["resultados"], csv_path)
+    
+            st.success("✅ Clasificación agregada y guardada en el CSV.")
+            with st.expander("Ver detalle de la clasificación agregada", expanded=True):
+                st.write(f"**ID:** {id_muestra}")
+                st.write(f"**Hospedero declarado:** {hosp_decl}")
+                st.write(f"**Hospedero predicho:** {host_pred}")
+                st.write(f"**Subtipo:** {subtipo}")
+                st.write(f"**Patogenicidad:** {patogenicidad}")
+                if motivos_det:
+                    st.write("**Motivos detectados:**")
+                    st.code(motivos_det, language="text")
+        except Exception as e:
+            st.error(f"Ocurrió un error durante la clasificación: {e}")
 
     st.markdown("---")
     st.subheader("📄 Resultados (CSV en disco)")
@@ -280,6 +280,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
