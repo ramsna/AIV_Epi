@@ -150,7 +150,7 @@ def cargar_csv(path_csv: str, cols):
 # =========================
 # UI
 # =========================
-st.title("🧬 Clasificador de Influenza A – MGAP DILAVE")
+#st.title("🧬 Clasificador de Influenza A ")
 
 with st.sidebar:
     st.header("⚙️ Configuración")
@@ -280,6 +280,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
