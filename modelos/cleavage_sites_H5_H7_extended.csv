@@ -1,0 +1,59 @@
+"Subtype","Clade_or_Type","Cleavage_Site","Critical_Basic_AA","Insert_Size"
+"H5 LPAI",,"PQRETR",1,0
+"H5N1 - HPAI","Gs/Gd-lineage","PQRERRRKKR",6,4
+"H5N1 - HPAI","Clade 1","PQREERRKKR",5,4
+"H5N1 - HPAI","Clade 1","PQREGRRKKR",5,4
+"H5N1 - HPAI","Clade 1","PQRVGRRKKR",5,4
+"H5N1 - HPAI","Clade 2.1","PQRESRRKK",4,3
+"H5N1 - HPAI","Clade 2.1","PQKEGRRKKR",6,4
+"H5N1 - HPAI","Clade 2.1","PQIERRRKKR",6,4
+"H5N1 - HPAI","Clade 2.1","PQRERRREKR",6,4
+"H5N1 - HPAI","Clade 2.2","PQGEKRRKKR",6,4
+"H5N1 - HPAI","Clade 2.2","PQGERRRKKR",6,4
+"H5N1 - HPAI","Clade 2.2","PQGEGRRKKR",6,4
+"H5N1 - HPAI","Clade 2.2","PQGDRRRKKR",6,4
+"H5N1 - HPAI","Clade 2.3.1","PQRERRRKR",5,3
+"H5N1 - HPAI","Clade 2.3.2","PQRERRRKR",5,3
+"H5N1 - HPAI","Clade 2.3.2","PRRERRRKR",5,3
+"H5N1 - HPAI","Clade 2.3.2","PQREKRRKR",5,3
+"H5N1 - HPAI","Clade 2.3.2","PQKERRRKR",5,3
+"H5N1 - HPAI","Clade 2.3.2","PQIERRRRKR",6,4
+"H5N1 - HPAI","Clade 2.3.2","PQRESRRRKR",6,4
+"H5N1 - HPAI","Clade 2.3.3","PQRERRRKR",5,3
+"H5 - HPAI","Clade 2.3.4","PLRERRRKR",6,4
+"H5 - HPAI","Clade 2.3.4","PLREKRRKR",6,4
+"H5 - HPAI","Clade 2.3.4","PPREKRRKR",6,4
+"H5 - HPAI","Clade 2.3.4","PLREKRRRKR",7,5
+"H5 - HPAI","Clade 2.3.4","PLRERRRKKR",6,4
+"H5 - HPAI","Clade 2.3.4","PLRERIRKKR",6,4
+"H5 - HPAI","Clade 2.3.4","PLGEKRRKR",6,4
+"H5 - HPAI","Clade 2.3.4","PLIEKRRKR",6,4
+"H5 - HPAI","Clade 2.3.4","PLRDKRRKR",6,4
+"H5N1 - HPAI","Clade 2-like","PQRERRRKKR",6,4
+"H5N1 - HPAI","Clade 2-like","PQRERRKKR",5,3
+"H5N1 - HPAI","Clade 3","PQRERRRKKR",6,4
+"H5N1 - HPAI","Clade 4","PQRERRRKKR",6,4
+"H5N1 - HPAI","Clade 5","PQREIRRKKR",5,4
+"H5N1 - HPAI","Clade 6","PQRERRRKKR",6,4
+"H5N1 - HPAI","Clade 7","PQIEGRRRKR",5,3
+"H5N1 - HPAI","Clade 7","PQRGRRRKR",5,3
+"H5N1 - HPAI","Clade 7","PQRGRRRKKR",6,4
+"H5N1 - HPAI","Clade 7","PQREGGRKKR",6,4
+"H5N1 - HPAI","Clade 7","PQREGGRRRKR",7,5
+"H5N1 - HPAI","Clade 7","PQREREGGRRRKR",8,6
+"H5N1 - HPAI","Clade 9","PQRERRRKKR",6,4
+"H7 - HPAI","A/turkey/S.Carolina/2020","PENPKTDRKSRHRRIR",8,6
+"H7 - HPAI","A/chicken/Guangdong/GD4/2017","PEVPKGKRTAR",3,4
+"H7 - HPAI","A/chicken/England/26352/2015","PEIPRHRKGR",4,3
+"H7 - HPAI","A/chicken/Italy/13VIR4527_11/13","PETPKRRERR",4,3
+"H7 - HPAI","A/chicken/Puebla/CPA-04451/16","PENPKDRKNRHRRTR",6,8
+"H7 - HPAI","A/chicken/Spain/6279-2/2009","PELPKGTKPRPRR",4,6
+"H7 - HPAI","A/chicken/Netherlands/219/03","PEIPKRRRR",4,2
+"H7 - HPAI","A/chicken/Victoria/224/92","PEIPKKKKR",4,2
+"H7 - HPAI","A/goose/Leipzig/192-7/79","PEIPKKRKKR",5,3
+"H7 - HPAI","A/chicken/England/63","PETPKRRRR",4,2
+"H7 - HPAI",,"PEIPKGR",1,0
+"H7 - HPAI",,"PELPKGK",1,0
+"H7 - HPAI",,"PEPPKGR",1,0
+"H7 - HPAI",,"PENPKTR",1,0
+"H7 - HPAI",,"PESPKTR",1,0
