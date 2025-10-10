@@ -8,7 +8,7 @@ import streamlit as st
 import gdown
 import pydeck as pdk
 
-st.set_page_config(page_title="Clasificador Influenza A – MGAP DILAVE", layout="wide")
+st.set_page_config(page_title="Clasificador Influenza A ", layout="wide")
 
 # =========================
 # Helpers
@@ -169,7 +169,7 @@ except Exception as e:
     modelos_ok = False
     st.error(f"No pude cargar modelos/archivos desde **{modelos_dir}**. Detalle: {e}")
 
-cols = ["ID", "Hospedero", "Predicho", "Subtipo", "Patogenicidad", "Lat", "Lon"]
+cols = ["ID", "Hospedero", "Hospedero origen (predicho)", "Subtipo", "Patogenicidad", "Lat", "Lon"]
 if "resultados" not in st.session_state:
     st.session_state["resultados"] = cargar_csv(csv_path, cols)
 
@@ -178,7 +178,7 @@ col_form, col_map = st.columns([0.38, 0.62], gap="large")
 with col_form:
     st.subheader("📥 Datos de la muestra")
     id_muestra = st.text_input("ID de muestra")
-    hosp_decl  = st.text_input("Hospedero declarado (texto libre)")
+    hosp_decl  = st.text_input("Hospedero")
     c1, c2 = st.columns(2)
     with c1: lat = st.text_input("Latitud (ej: -34.9)")
     with c2: lon = st.text_input("Longitud (ej: -56.2)")
@@ -274,3 +274,4 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
