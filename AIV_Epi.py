@@ -59,7 +59,7 @@ DRIVE_ID = "1orIsijhlHdxrr8FjYnaEG6_5z24VOnFn"   # <-- reemplazá si cambia
 URL = f"https://drive.google.com/uc?id={DRIVE_ID}"
 
 DEST_DIR = "modelos"
-TMP_ZIP  = "modelos_tmp.zip"
+TMP_ZIP  = "modelos_v1.zip"
 
 @st.cache_data(show_spinner=True)
 def ensure_modelos_drive():
@@ -270,6 +270,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
