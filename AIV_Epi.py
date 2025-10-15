@@ -11,9 +11,6 @@ import pydeck as pdk
 
 st.set_page_config(page_title="Clasificador Influenza A", layout="wide")
 
-# =========================
-# Helpers
-# =========================
 def calcular_DPC(sec: str) -> pd.DataFrame:
     sec = sec.upper().replace("\n", "")
     aminoacidos = "ACDEFGHIKLMNPQRSTVWY"
@@ -51,12 +48,8 @@ def detectar_sitio_clivaje(secuencia, motivos, ventana_max=14):
                         )
     return "\n".join(encontrados) if encontrados else "Ningún motivo detectado"
 
-# =========================
-# Descarga de modelos (Google Drive + gdown)
-# =========================
-# 👇 PONÉ SOLO EL ID (ej: "1AbCDeFG..."), NO la URL completa
 DRIVE_ID = "1CMLlczo-eWmFDVEChozS08W-JWwuFIFw"   # <-- reemplazá si cambia
-URL = f"https://drive.google.com/uc?id={DRIVE_ID}"
+URL = f"https://drive.google.com/uc?id={DRIVE_ID}, fuzzy=True"
 
 DEST_DIR = "modelos"
 TMP_ZIP  = "modelos_tmp.zip"
@@ -270,6 +263,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
