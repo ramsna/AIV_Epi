@@ -59,34 +59,31 @@ gdown.download(id=DRIVE_ID, output=str(TMP_ZIP), quiet=False)
 DEST_DIR = "modelos"
 TMP_ZIP  = "modelos_tmp.zip"
 
-@st.cache_data(show_spinner=True)
-def ensure_modelos_drive():
-    necesarios = [
-        "scaler.pkl",
-        "SVM_best_model.pkl",
-        "KNN_best_model.pkl",
-        "cleavage_sites_H5_H7_extended.csv",
-    ]
-    if all(os.path.exists(os.path.join(DEST_DIR, f)) for f in necesarios):
-        return DEST_DIR
+@st.cache_data(show_spinner=False)
+def ensure_modelos_drive() -> str:
+    from pathlib import Path
+    import zipfile, gdown
 
-    os.makedirs(DEST_DIR, exist_ok=True)
-    st.info("📦 Descargando modelos desde Google Drive…")
-    # gdown acepta URL uc?id=... o directamente id=...
-    gdown.download(URL, TMP_ZIP, quiet=False)
+    MODELOS_DIR = Path("modelos")
+    if MODELOS_DIR.exists() and any(MODELOS_DIR.iterdir()):
+        return str(MODELOS_DIR)
 
-    with zipfile.ZipFile(TMP_ZIP, "r") as z:
-        z.extractall(DEST_DIR)
+    TMP_ZIP = Path("/tmp/modelos.zip")
+    DRIVE_ID = "1CMLlczo-eWmFDVEChozS08W-JWwuFIFw"
 
-    try:
-        os.remove(TMP_ZIP)
-    except OSError:
-        pass
+    # ✅ recomendado
+    gdown.download(id=DRIVE_ID, output=str(TMP_ZIP), quiet=False)
 
-    if not all(os.path.exists(os.path.join(DEST_DIR, f)) for f in necesarios):
-        raise RuntimeError("Faltan archivos de modelos luego de extraer el ZIP.")
+    # Si prefieres URL:
+    # URL = f"https://drive.google.com/file/d/{DRIVE_ID}/view?usp=sharing"
+    # gdown.download(URL, output=str(TMP_ZIP), quiet=False, fuzzy=True)
 
-    return DEST_DIR
+    MODELOS_DIR.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(TMP_ZIP, "r") as zf:
+        zf.extractall(MODELOS_DIR)
+
+    return str(MODELOS_DIR)
+
 
 modelos_dir = ensure_modelos_drive()
 
@@ -268,6 +265,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
