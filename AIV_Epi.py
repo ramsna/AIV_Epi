@@ -47,12 +47,46 @@ def detectar_sitio_clivaje(secuencia, motivos, ventana_max=14):
                             f"- Motivo: {motivo} | Subtipo: {subtipo} | Clado/Tipo: {clado_tipo}"
                         )
     return "\n".join(encontrados) if encontrados else "Ningún motivo detectado"
-DRIVE_ID = "1CMLlczo-eWmFDVEChozS08W-JWwuFIFw"
-URL = f"https://drive.google.com/file/d/{DRIVE_ID}/view?usp=sharing"
-# o:
-# URL = f"https://drive.google.com/uc?export=download&id={DRIVE_ID}"
+from pathlib import Path
+import zipfile
+import streamlit as st
+import gdown
 
-gdown.download(URL, output=str(TMP_ZIP), quiet=False, fuzzy=True)
+@st.cache_data(show_spinner=False)
+def ensure_modelos_drive() -> str:
+    MODELOS_DIR = Path("modelos")
+    if MODELOS_DIR.exists() and any(MODELOS_DIR.iterdir()):
+        return str(MODELOS_DIR)
+
+    TMP_ZIP = Path("/tmp/modelos.zip")
+    MODELOS_DIR.mkdir(parents=True, exist_ok=True)
+
+    # --- Config ---
+    DRIVE_ID = "1CMLlczo-eWmFDVEChozS08W-JWwuFIFw"
+    # (opcional) si insistes en URL, asegúrate de que sea str y válida:
+    # URL = f"https://drive.google.com/file/d/{DRIVE_ID}/view?usp=sharing"
+
+    # --- Descarga robusta por ID (recomendado) ---
+    try:
+        # Borra si quedó un ZIP viejo/truncado
+        if TMP_ZIP.exists():
+            TMP_ZIP.unlink()
+        # Esta vía evita problemas de URL mal formadas
+        ok_path = gdown.download(id=DRIVE_ID, output=str(TMP_ZIP), quiet=False)
+        if not ok_path or not TMP_ZIP.exists() or TMP_ZIP.stat().st_size < 1024:
+            raise RuntimeError("Descarga vacía o incompleta desde Drive (por ID).")
+    except Exception as e:
+        raise RuntimeError(f"Fallo al descargar desde Drive por ID: {e}")
+
+    # --- Descomprimir ---
+    try:
+        with zipfile.ZipFile(TMP_ZIP, "r") as zf:
+            zf.extractall(MODELOS_DIR)
+    except zipfile.BadZipFile as e:
+        raise RuntimeError(f"El archivo descargado no es un ZIP válido: {e}")
+
+    return str(MODELOS_DIR)
+
 
 
 
@@ -268,6 +302,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
