@@ -47,10 +47,13 @@ def detectar_sitio_clivaje(secuencia, motivos, ventana_max=14):
                             f"- Motivo: {motivo} | Subtipo: {subtipo} | Clado/Tipo: {clado_tipo}"
                         )
     return "\n".join(encontrados) if encontrados else "Ningún motivo detectado"
-
 DRIVE_ID = "1CMLlczo-eWmFDVEChozS08W-JWwuFIFw"
+URL = f"https://drive.google.com/file/d/{DRIVE_ID}/view?usp=sharing"
+# o:
+# URL = f"https://drive.google.com/uc?export=download&id={DRIVE_ID}"
 
-gdown.download(id=DRIVE_ID, output="/tmp/modelos.zip", quiet=False)
+gdown.download(URL, output=str(TMP_ZIP), quiet=False, fuzzy=True)
+
 
 
 DEST_DIR = "modelos"
@@ -265,6 +268,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
