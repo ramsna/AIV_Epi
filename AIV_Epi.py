@@ -80,7 +80,7 @@ def ensure_modelos_drive() -> str:
     if MODELOS_DIR.exists() and any(MODELOS_DIR.iterdir()):
         return str(MODELOS_DIR)
 
-    TMP_ZIP = Path("/tmp/modelos.zip")
+    TMP_ZIP = Path("/tmp/modelos_v1.zip")
     if TMP_ZIP.exists():
         TMP_ZIP.unlink()
 
@@ -296,4 +296,5 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
