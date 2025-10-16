@@ -83,7 +83,7 @@ with zipfile.ZipFile(TMP_ZIP, "r") as zf:
 # gdown.download(URL, output=str(TMP_ZIP), quiet=False, fuzzy=True)
 
 MODELOS_DIR.mkdir(parents=True, exist_ok=True)
-w#ith zipfile.ZipFile(TMP_ZIP, "r") as zf:
+with zipfile.ZipFile(TMP_ZIP, "r") as zf:
 #    zf.extractall(MODELOS_DIR)
 
 #return str(MODELOS_DIR)
@@ -269,6 +269,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
