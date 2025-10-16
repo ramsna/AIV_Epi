@@ -52,37 +52,41 @@ import zipfile
 import streamlit as st
 import gdown
 
+from pathlib import Path
+import zipfile
+import gdown
+
 DRIVE_ID = "1CMLlczo-eWmFDVEChozS08W-JWwuFIFw"
+
+# ✅ define TMP_ZIP antes y sin coma al final
+TMP_ZIP = Path("/tmp/modelos.zip")  # <-- sin coma
+
+# (opcional) limpia un zip previo truncado
+if TMP_ZIP.exists():
+    TMP_ZIP.unlink()
+
+# ✅ descarga por ID
 gdown.download(id=DRIVE_ID, output=str(TMP_ZIP), quiet=False)
 
+# ✅ descomprime
+MODELOS_DIR = Path("modelos")
+MODELOS_DIR.mkdir(parents=True, exist_ok=True)
+with zipfile.ZipFile(TMP_ZIP, "r") as zf:
+    zf.extractall(MODELOS_DIR)
 
-DEST_DIR = "modelos"
-TMP_ZIP  = "modelos_tmp.zip"
 
-@st.cache_data(show_spinner=False)
-def ensure_modelos_drive() -> str:
-    from pathlib import Path
-    import zipfile, gdown
+# ✅ recomendado
+#gdown.download(id=DRIVE_ID, output=str(TMP_ZIP), quiet=False)
 
-    MODELOS_DIR = Path("modelos")
-    if MODELOS_DIR.exists() and any(MODELOS_DIR.iterdir()):
-        return str(MODELOS_DIR)
+# Si prefieres URL:
+# URL = f"https://drive.google.com/file/d/{DRIVE_ID}/view?usp=sharing"
+# gdown.download(URL, output=str(TMP_ZIP), quiet=False, fuzzy=True)
 
-    TMP_ZIP = Path("/tmp/modelos.zip")
-    DRIVE_ID = "1CMLlczo-eWmFDVEChozS08W-JWwuFIFw"
+MODELOS_DIR.mkdir(parents=True, exist_ok=True)
+w#ith zipfile.ZipFile(TMP_ZIP, "r") as zf:
+#    zf.extractall(MODELOS_DIR)
 
-    # ✅ recomendado
-    gdown.download(id=DRIVE_ID, output=str(TMP_ZIP), quiet=False)
-
-    # Si prefieres URL:
-    # URL = f"https://drive.google.com/file/d/{DRIVE_ID}/view?usp=sharing"
-    # gdown.download(URL, output=str(TMP_ZIP), quiet=False, fuzzy=True)
-
-    MODELOS_DIR.mkdir(parents=True, exist_ok=True)
-    with zipfile.ZipFile(TMP_ZIP, "r") as zf:
-        zf.extractall(MODELOS_DIR)
-
-    return str(MODELOS_DIR)
+#return str(MODELOS_DIR)
 
 
 modelos_dir = ensure_modelos_drive()
@@ -265,6 +269,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
