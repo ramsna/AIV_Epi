@@ -72,7 +72,7 @@ def detectar_sitio_clivaje(secuencia: str, motivos: pd.DataFrame, ventana_max=14
 # Descarga y preparación de modelos (Google Drive)
 # =========================
 DRIVE_ID = "1orIsijhlHdxrr8FjYnaEG6_5z24VOnFn"
-FALLBACK_URL = ""  # opcional: p.ej. "https://huggingface.co/tuuser/tu-repo/resolve/main/modelos.zip"
+FALLBACK_URL = ""  # opcional: p.ej. "https://huggingface.co/tuuser/tu-repo/resolve/main/modelos_v1.zip"
 
 @st.cache_data(show_spinner=True)
 def ensure_modelos_drive() -> str:
@@ -296,3 +296,4 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
