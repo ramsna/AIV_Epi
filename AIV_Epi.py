@@ -56,38 +56,54 @@ from pathlib import Path
 import zipfile
 import gdown
 
+# =========================
+# Descarga y preparación de modelos (Google Drive)
+# =========================
+from pathlib import Path
+import zipfile
+import gdown
+import requests  # si usarás FALLBACK_URL
+
 DRIVE_ID = "1orIsijhlHdxrr8FjYnaEG6_5z24VOnFn"
+FALLBACK_URL = ""  # opcional: p.ej. "https://huggingface.co/tuuser/tu-repo/resolve/main/modelos.zip"
 
-# ✅ define TMP_ZIP antes y sin coma al final
-TMP_ZIP = Path("/tmp/modelos.zip")  # <-- sin coma
+@st.cache_data(show_spinner=True)
+def ensure_modelos_drive() -> str:
+    MODELOS_DIR = Path("modelos")
+    if MODELOS_DIR.exists() and any(MODELOS_DIR.iterdir()):
+        return str(MODELOS_DIR)
 
-# (opcional) limpia un zip previo truncado
-if TMP_ZIP.exists():
-    TMP_ZIP.unlink()
+    TMP_ZIP = Path("/tmp/modelos.zip")
+    if TMP_ZIP.exists():
+        TMP_ZIP.unlink()
 
-# ✅ descarga por ID
-gdown.download(id=DRIVE_ID, output=str(TMP_ZIP), quiet=False)
+    # ---- 1) Intentar por ID (robusto) ----
+    try:
+        ok = gdown.download(id=DRIVE_ID, output=str(TMP_ZIP), quiet=False, use_cookies=True)
+        if not ok or not TMP_ZIP.exists() or TMP_ZIP.stat().st_size < 1024:
+            raise RuntimeError("Descarga incompleta/pequeña desde Drive.")
+    except Exception as e_id:
+        # ---- 2) Fallback opcional (mirror HTTP) ----
+        if not FALLBACK_URL:
+            raise RuntimeError(f"Fallo Drive por ID: {e_id}. Configura FALLBACK_URL o revisa permisos/cuota.") from e_id
+        r = requests.get(FALLBACK_URL, stream=True, timeout=60)
+        r.raise_for_status()
+        with open(TMP_ZIP, "wb") as f:
+            for c in r.iter_content(1 << 20):
+                if c:
+                    f.write(c)
+        if TMP_ZIP.stat().st_size < 1024:
+            raise RuntimeError("Fallback HTTP descargó un archivo demasiado pequeño.")
 
-# ✅ descomprime
-MODELOS_DIR = Path("modelos")
-MODELOS_DIR.mkdir(parents=True, exist_ok=True)
-with zipfile.ZipFile(TMP_ZIP, "r") as zf:
-    zf.extractall(MODELOS_DIR)
+    # ---- 3) Descomprimir ----
+    MODELOS_DIR.mkdir(parents=True, exist_ok=True)
+    try:
+        with zipfile.ZipFile(TMP_ZIP, "r") as zf:
+            zf.extractall(MODELOS_DIR)
+    except zipfile.BadZipFile:
+        raise RuntimeError("El archivo descargado no es un ZIP válido (¿Drive devolvió HTML?).")
 
-
-# ✅ recomendado
-#gdown.download(id=DRIVE_ID, output=str(TMP_ZIP), quiet=False)
-
-# Si prefieres URL:
-# URL = f"https://drive.google.com/file/d/{DRIVE_ID}/view?usp=sharing"
-# gdown.download(URL, output=str(TMP_ZIP), quiet=False, fuzzy=True)
-
-MODELOS_DIR.mkdir(parents=True, exist_ok=True)
-with zipfile.ZipFile(TMP_ZIP, "r") as zf:
-#    zf.extractall(MODELOS_DIR)
-
-#return str(MODELOS_DIR)
-
+    return str(MODELOS_DIR)
 
 modelos_dir = ensure_modelos_drive()
 
@@ -269,6 +285,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
