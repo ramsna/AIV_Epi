@@ -1,37 +1,58 @@
 # aiv_app_streamlit.py
-import streamlit as st
-import pandas as pd
-import numpy as np
-import joblib
-import itertools
 import os
+from pathlib import Path
+
+import itertools
+import joblib
+import numpy as np
+import pandas as pd
+import pydeck as pdk
+import streamlit as st
 import zipfile
 import gdown
-import pydeck as pdk
+import requests  # si NO usarás fallback, puedes quitar esta import
 
 st.set_page_config(page_title="Clasificador Influenza A", layout="wide")
 
+# =========================
+# Helpers de features y motivos
+# =========================
 def calcular_DPC(sec: str) -> pd.DataFrame:
-    sec = sec.upper().replace("\n", "")
+    """Vector de 400 dipeptidos normalizados (20x20)."""
+    if not isinstance(sec, str):
+        sec = str(sec or "")
+    sec = sec.upper().replace("\n", "").strip()
     aminoacidos = "ACDEFGHIKLMNPQRSTVWY"
     DPC = [''.join(p) for p in itertools.product(aminoacidos, repeat=2)]
     dpc = {d: 0 for d in DPC}
+    if len(sec) < 2:
+        return pd.DataFrame([np.zeros(400)], columns=list(range(400)))
+
     for i in range(len(sec) - 1):
         par = sec[i:i + 2]
-        if par in DPC:
+        if par in dpc:
             dpc[par] += 1
+
     total = len(sec) - 1
     if total > 0:
-        for par in dpc:
-            dpc[par] /= total
-        dpc_vec = pd.DataFrame([dpc])
-        dpc_vec.columns = list(range(400))
-        return dpc_vec
-    return pd.DataFrame([np.zeros(400)], columns=list(range(400)))
+        for k in dpc:
+            dpc[k] /= total
 
-def detectar_sitio_clivaje(secuencia, motivos, ventana_max=14):
-    secuencia = secuencia.upper()
-    motivos_set = set(motivos['Cleavage_Site'].astype(str).str.strip())
+    # Si tus modelos fueron entrenados con columnas 0..399, conservamos ese esquema
+    dpc_vec = pd.DataFrame([list(dpc.values())], columns=list(range(400)))
+    return dpc_vec
+
+
+def detectar_sitio_clivaje(secuencia: str, motivos: pd.DataFrame, ventana_max=14) -> str:
+    """Busca motivos de clivaje antes de 'GLF' (posición P4..P14)."""
+    secuencia = (secuencia or "").upper()
+    if motivos is None or motivos.empty:
+        return "Tabla de motivos no cargada"
+
+    motivos = motivos.copy()
+    motivos["Cleavage_Site"] = motivos["Cleavage_Site"].astype(str).str.strip()
+    motivos_set = set(motivos["Cleavage_Site"])
+
     encontrados = []
     for i in range(len(secuencia) - 2):
         if secuencia[i:i + 3] == "GLF":
@@ -40,30 +61,16 @@ def detectar_sitio_clivaje(secuencia, motivos, ventana_max=14):
                 if inicio >= 0:
                     motivo = secuencia[inicio:i]
                     if motivo in motivos_set:
-                        info = motivos[motivos['Cleavage_Site'].astype(str).str.strip() == motivo]
-                        clado_tipo = info.iloc[0]['Clade_or_Type']
-                        subtipo = info.iloc[0]['Subtype']
+                        info = motivos[motivos["Cleavage_Site"] == motivo].iloc[0]
                         encontrados.append(
-                            f"- Motivo: {motivo} | Subtipo: {subtipo} | Clado/Tipo: {clado_tipo}"
+                            f"- Motivo: {motivo} | Subtipo: {info.get('Subtype','NA')} | Clado/Tipo: {info.get('Clade_or_Type','NA')}"
                         )
     return "\n".join(encontrados) if encontrados else "Ningún motivo detectado"
-from pathlib import Path
-import zipfile
-import streamlit as st
-import gdown
 
-from pathlib import Path
-import zipfile
-import gdown
 
 # =========================
 # Descarga y preparación de modelos (Google Drive)
 # =========================
-from pathlib import Path
-import zipfile
-import gdown
-import requests  # si usarás FALLBACK_URL
-
 DRIVE_ID = "1orIsijhlHdxrr8FjYnaEG6_5z24VOnFn"
 FALLBACK_URL = ""  # opcional: p.ej. "https://huggingface.co/tuuser/tu-repo/resolve/main/modelos.zip"
 
@@ -77,13 +84,13 @@ def ensure_modelos_drive() -> str:
     if TMP_ZIP.exists():
         TMP_ZIP.unlink()
 
-    # ---- 1) Intentar por ID (robusto) ----
+    # 1) Intento por ID (robusto)
     try:
         ok = gdown.download(id=DRIVE_ID, output=str(TMP_ZIP), quiet=False, use_cookies=True)
         if not ok or not TMP_ZIP.exists() or TMP_ZIP.stat().st_size < 1024:
-            raise RuntimeError("Descarga incompleta/pequeña desde Drive.")
+            raise RuntimeError("Descarga incompleta desde Drive (archivo muy pequeño).")
     except Exception as e_id:
-        # ---- 2) Fallback opcional (mirror HTTP) ----
+        # 2) Fallback opcional (mirror HTTP)
         if not FALLBACK_URL:
             raise RuntimeError(f"Fallo Drive por ID: {e_id}. Configura FALLBACK_URL o revisa permisos/cuota.") from e_id
         r = requests.get(FALLBACK_URL, stream=True, timeout=60)
@@ -95,7 +102,7 @@ def ensure_modelos_drive() -> str:
         if TMP_ZIP.stat().st_size < 1024:
             raise RuntimeError("Fallback HTTP descargó un archivo demasiado pequeño.")
 
-    # ---- 3) Descomprimir ----
+    # 3) Descomprimir
     MODELOS_DIR.mkdir(parents=True, exist_ok=True)
     try:
         with zipfile.ZipFile(TMP_ZIP, "r") as zf:
@@ -104,6 +111,7 @@ def ensure_modelos_drive() -> str:
         raise RuntimeError("El archivo descargado no es un ZIP válido (¿Drive devolvió HTML?).")
 
     return str(MODELOS_DIR)
+
 
 modelos_dir = ensure_modelos_drive()
 
@@ -116,8 +124,10 @@ def cargar_modelos_y_tablas(model_dir: str):
     motivos        = pd.read_csv(os.path.join(model_dir, "cleavage_sites_H5_H7_extended.csv"))
     return scaler_subtipo, model_subtipo, scaler_host, model_host, motivos
 
+
 def guardar_csv(df: pd.DataFrame, path_csv: str):
     df.to_csv(path_csv, index=False, encoding="utf-8")
+
 
 def cargar_csv(path_csv: str, cols):
     if os.path.exists(path_csv):
@@ -128,16 +138,17 @@ def cargar_csv(path_csv: str, cols):
     else:
         return pd.DataFrame(columns=cols, dtype=str)
 
+
 # =========================
 # UI
 # =========================
-st.title("🧬 Clasificador de Influenza A ")
+st.title("🧬 Clasificador de Influenza A")
 
 with st.sidebar:
     st.header("⚙️ Configuración")
     modelos_dir = st.text_input(
         "Carpeta de modelos",
-        value=modelos_dir,  # ya apunta a 'modelos' descargado
+        value=modelos_dir,
         help="Debe contener scaler.pkl, SVM_best_model.pkl, KNN_best_model.pkl y cleavage_sites_H5_H7_extended.csv",
     )
     csv_path = st.text_input("Archivo CSV de resultados", value="resultados_influenza.csv")
@@ -227,7 +238,7 @@ with col_form:
     st.subheader("📄 Resultados (CSV en disco)")
     st.dataframe(
         st.session_state["resultados"],
-        width="stretch",
+        use_container_width=True,
         hide_index=True
     )
 
@@ -285,17 +296,3 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
