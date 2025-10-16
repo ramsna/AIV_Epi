@@ -76,11 +76,11 @@ FALLBACK_URL = ""  # opcional: p.ej. "https://huggingface.co/tuuser/tu-repo/reso
 
 @st.cache_data(show_spinner=True)
 def ensure_modelos_drive() -> str:
-    MODELOS_DIR = Path("modelos")
+    MODELOS_DIR = Path("modelos_v1")
     if MODELOS_DIR.exists() and any(MODELOS_DIR.iterdir()):
         return str(MODELOS_DIR)
 
-    TMP_ZIP = Path("/tmp/modelos_v1.zip")
+    TMP_ZIP = Path("/tmp/modelos.zip")
     if TMP_ZIP.exists():
         TMP_ZIP.unlink()
 
@@ -296,5 +296,6 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
