@@ -200,7 +200,7 @@ with col_form:
 
             motivos_det = detectar_sitio_clivaje(sec, motivos) if subtipo in ["H5", "H7"] else ""
             if subtipo in ["H5", "H7"]:
-                patogenicidad = "Alta" if ("RRR" in motivos_det or "KRR" in motivos_det) else "Baja"
+                patogenicidad = "Alta" if ("HPAI" in motivos_det) else "Baja"
             else:
                 patogenicidad = "No aplica"
 
@@ -296,6 +296,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
