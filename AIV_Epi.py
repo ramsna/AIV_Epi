@@ -10,7 +10,7 @@ import pydeck as pdk
 import streamlit as st
 import zipfile
 import gdown
-import requests  # si NO usarás fallback, puedes quitar esta import
+import requests  
 
 st.set_page_config(page_title="Clasificador Influenza A", layout="wide")
 
@@ -38,7 +38,7 @@ def calcular_DPC(sec: str) -> pd.DataFrame:
         for k in dpc:
             dpc[k] /= total
 
-    # Si tus modelos fueron entrenados con columnas 0..399, conservamos ese esquema
+    #Los modelos fueron entrenados con vectores de 400, se guardan igual
     dpc_vec = pd.DataFrame([list(dpc.values())], columns=list(range(400)))
     return dpc_vec
 
@@ -72,7 +72,6 @@ def detectar_sitio_clivaje(secuencia: str, motivos: pd.DataFrame, ventana_max=14
 # Descarga y preparación de modelos (Google Drive)
 # =========================
 DRIVE_ID = "1orIsijhlHdxrr8FjYnaEG6_5z24VOnFn"
-FALLBACK_URL = ""  # opcional: p.ej. "https://huggingface.co/tuuser/tu-repo/resolve/main/modelos_v1.zip"
 
 @st.cache_data(show_spinner=True)
 def ensure_modelos_drive() -> str:
@@ -84,7 +83,7 @@ def ensure_modelos_drive() -> str:
     if TMP_ZIP.exists():
         TMP_ZIP.unlink()
 
-    # 1) Intento por ID (robusto)
+    # 1) Intento por ID 
     try:
         ok = gdown.download(id=DRIVE_ID, output=str(TMP_ZIP), quiet=False, use_cookies=True)
         if not ok or not TMP_ZIP.exists() or TMP_ZIP.stat().st_size < 1024:
@@ -142,7 +141,7 @@ def cargar_csv(path_csv: str, cols):
 # =========================
 # UI
 # =========================
-st.title("🧬 Clasificador de Influenza A")
+st.title("🧬 Clasificador de Influenza A (Beta)")
 
 with st.sidebar:
     st.header("⚙️ Configuración")
@@ -296,6 +295,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
