@@ -141,15 +141,6 @@ def cargar_csv(path_csv: str, cols):
 # =========================
 # UI
 # =========================
-st.title("🧬 Clasificador de Influenza A (Beta)")# Estado del modal
-# -----------------------
-# Ventana de ayuda (modal)
-# -----------------------
-if "show_help" not in st.session_state:
-    st.session_state.show_help = False
-
-# Botón para abrir la ayuda
-if st.button("❓ Cómo usar la app"):
  st.title("🧬 Clasificador de Influenza A (Beta)")
 
 # ---------------------------
@@ -331,6 +322,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
