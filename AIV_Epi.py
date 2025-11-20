@@ -143,70 +143,72 @@ def cargar_csv(path_csv: str, cols):
 # =========================
 st.title("🧬 Clasificador de Influenza A (Beta)")
 
-# Estado del modal
+# -----------------------
+# Ventana de ayuda (modal)
+# -----------------------
 if "show_help" not in st.session_state:
     st.session_state.show_help = False
 
-# Botón para abrir la ayuda
+# Botón para abrir el modal
 if st.button("❓ Cómo usar la app"):
     st.session_state.show_help = True
 
-# Modal con cruz para cerrar
+# CSS del fondo y la caja
+st.markdown("""
+<style>
+.modal-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.35);
+    z-index: 998;
+}
+.modal-box {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 30px;
+    width: 60%;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    z-index: 999;
+}
+.close-btn-container {
+    position: fixed;
+    /* ajustá estos dos valores para mover la cruz dentro de la caja */
+    top: calc(50% - 155px);   /* un poco por debajo del borde superior del modal */
+    left: calc(50% + 260px);  /* cerca del borde derecho del modal */
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+}
+</style>
+""", unsafe_allow_html=True)
+
 if st.session_state.show_help:
+    # Fondo gris + caja blanca
     st.markdown("""
-    <style>
-    .modal-bg {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.35);
-        z-index: 998;
-    }
-    .modal-box {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: white;
-        padding: 30px;
-        width: 60%;
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-        z-index: 999;
-    }
-    .modal-close {
-        position: absolute;
-        top: 10px;
-        right: 18px;
-        font-size: 22px;
-        cursor: pointer;
-        color: #555;
-        font-weight: bold;
-    }
-    .modal-close:hover {
-        color: red;
-    }
-    </style>
-
-    <div class="modal-bg" id="help-bg"></div>
-
-    <div class="modal-box" id="help-modal">
-        <span class="modal-close"
-              onclick="document.getElementById('help-modal').style.display='none';
-                       document.getElementById('help-bg').style.display='none';">
-            &times;
-        </span>
-        <h3>Cómo usar la app</h3>
-        <p>
-        1. Cargá la secuencia de HA.<br>
-        2. Seleccioná el modelo de clasificación.<br>
-        3. Ingresá coordenadas.<br>
-        4. Hacé clic en <b>Clasificar</b>.
-        </p>
-    </div>
+        <div class="modal-bg"></div>
+        <div class="modal-box">
+            <h3>Cómo usar la app</h3>
+            <p>
+            1. Cargá la secuencia de HA.<br>
+            2. Seleccioná el modelo de clasificación.<br>
+            3. Ingresá coordenadas.<br>
+            4. Hacé clic en <b>Clasificar</b>.
+            </p>
+        </div>
     """, unsafe_allow_html=True)
+
+    # Botón de Streamlit que actúa como cruz (✖)
+    close_placeholder = st.empty()
+    with close_placeholder.container():
+        st.markdown('<div class="close-btn-container">', unsafe_allow_html=True)
+        if st.button("
+
 
 with st.sidebar:
     st.header("⚙️ Configuración")
@@ -360,6 +362,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
