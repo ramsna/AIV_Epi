@@ -157,7 +157,7 @@ if st.button("❓ Cómo usar la app"):
 
 # CSS + HTML + JS del modal
 if st.session_state.show_help:
-    st.markdown("""
+    st.markdown(""
     <style>
     .modal-bg {
         position: fixed;
@@ -346,6 +346,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
