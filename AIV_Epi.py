@@ -146,29 +146,36 @@ st.title("🧬 Clasificador de Influenza A (Beta)")
 # ---------------------------
 # Ayuda simple arriba de la app
 # ---------------------------
+st.title("🧬 Clasificador de Influenza A (Beta)")
+
+# ---------------------------
+# Ayuda compacta arriba de la app
+# ---------------------------
 if "show_help" not in st.session_state:
-    st.session_state.show_help = True   # Se muestra la primera vez
+    st.session_state.show_help = True   # se muestra la primera vez
 
 if st.session_state.show_help:
     with st.container(border=True):
-        st.markdown("### ℹ️ Cómo usar la aplicación")
-        st.markdown(
-            """
-            1. Ingresá el **ID de la muestra**.  
-            2. Escribí el **hospedero declarado**.  
-            3. Cargá las **coordenadas de latitud y longitud**.  
-            4. Pegá la **secuencia de aminoácidos de HA** (sin encabezado FASTA).  
-            5. Hacé clic en **“Clasificar y agregar al mapa/tabla”**.  
+        col_texto, col_cerrar = st.columns([0.92, 0.08])
 
-            La app va a mostrar:
-            - Subtipo de HA predicho  
-            - Hospedero predicho  
-            - Patogenicidad (si es H5/H7)  
-            - Punto en el mapa con los datos de la muestra  
-            """
-        )
-        if st.button("Entendido", key="cerrar_ayuda"):
-            st.session_state.show_help = False
+        with col_texto:
+            st.markdown(
+                """
+                <div style="font-size:0.80rem; line-height:1.25;">
+                  <b>Cómo usar la aplicación</b><br>
+                  1. Ingresá el <b>ID</b> de la muestra.<br>
+                  2. Escribí el <b>hospedero declarado</b>.<br>
+                  3. Cargá <b>latitud</b> y <b>longitud</b>.<br>
+                  4. Pegá la <b>secuencia de HA</b> (sin encabezado).<br>
+                  5. Hacé clic en <b>“Clasificar y agregar al mapa/tabla”</b>.<br><br>
+                  La app mostrará el subtipo, hospedero predicho, patogenicidad (H5/H7) y la muestra en el mapa.
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+        with col_cerrar:
+            st.button("✖", key="cerrar_ayuda", on_click=lambda: st.session_state.__setitem__("show_help", False))
 
 with st.sidebar:
     st.header("⚙️ Configuración")
@@ -322,6 +329,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
