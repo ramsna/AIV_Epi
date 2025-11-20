@@ -205,7 +205,7 @@ if st.session_state.show_help:
     st.markdown(modal_html, unsafe_allow_html=True)
 
     # Ahora agregamos el botón exactamente debajo del marcador
-    st.markdown('<div class="btn-container">', unsafe_allow_html=True)
+    st.markdown('<div class="btn-container">', unsafe_allow_html=False)
     st.button("Entendido", on_click=lambda: st.session_state.__setitem__("show_help", False))
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -363,6 +363,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
