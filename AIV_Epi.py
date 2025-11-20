@@ -141,7 +141,7 @@ def cargar_csv(path_csv: str, cols):
 # =========================
 # UI
 # =========================
- st.title("🧬 Clasificador de Influenza A (Beta)")
+st.title("🧬 Clasificador de Influenza A (Beta)")
 
 # ---------------------------
 # Ayuda simple arriba de la app
@@ -322,6 +322,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
