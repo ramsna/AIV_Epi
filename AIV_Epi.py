@@ -189,7 +189,7 @@ if st.session_state.show_help:
             </p>
         </div>
     """, unsafe_allow_html=True)
-st.button("Entendido", on_click=lambda: st.session_state.__setitem__("show_help", False))
+    st.button("Entendido", on_click=lambda: st.session_state.__setitem__("show_help", False))
 
 
 with st.sidebar:
@@ -344,6 +344,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
