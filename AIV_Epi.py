@@ -143,7 +143,7 @@ def cargar_csv(path_csv: str, cols):
 # =========================
 st.title("🧬 Clasificador de Influenza A (Beta)")
 
- if "show_help" not in st.session_state:
+if "show_help" not in st.session_state:
     st.session_state.show_help = False
 
 st.button("❓ Cómo usar la app", on_click=lambda: st.session_state.__setitem__("show_help", True))
@@ -345,6 +345,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
