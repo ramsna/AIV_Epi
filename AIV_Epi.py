@@ -143,60 +143,58 @@ def cargar_csv(path_csv: str, cols):
 # =========================
 st.title("🧬 Clasificador de Influenza A (Beta)")
 # Estado del modal
+import streamlit as st
+
+# Estado del modal
 if "show_help" not in st.session_state:
     st.session_state.show_help = False
 
-# Botón para abrir la ayuda
+# Botón para abrir modal
 if st.button("❓ Cómo usar la app"):
     st.session_state.show_help = True
 
-# Modal con cruz para cerrar
+# CSS del modal
+st.markdown("""
+<style>
+.modal-bg {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.35);
+    z-index: 998;
+}
+.modal-box {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 30px;
+    width: 60%;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    z-index: 999;
+}
+.modal-close {
+    position: absolute;
+    top: 10px; right: 18px;
+    font-size: 22px;
+    cursor: pointer;
+    color: #555;
+    font-weight: bold;
+}
+.modal-close:hover { color: red; }
+</style>
+""", unsafe_allow_html=True)
+
+# Mostrar modal
 if st.session_state.show_help:
     st.markdown("""
-    <style>
-    .modal-bg {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.35);
-        z-index: 998;
-    }
-    .modal-box {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: white;
-        padding: 30px;
-        width: 60%;
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-        z-index: 999;
-    }
-    .modal-close {
-        position: absolute;
-        top: 10px;
-        right: 18px;
-        font-size: 22px;
-        cursor: pointer;
-        color: #555;
-        font-weight: bold;
-    }
-    .modal-close:hover {
-        color: red;
-    }
-    </style>
-
-    <div class="modal-bg" id="help-bg"></div>
-
-    <div class="modal-box" id="help-modal">
-        <span class="modal-close"
-              onclick="document.getElementById('help-modal').style.display='none';
-                       document.getElementById('help-bg').style.display='none';">
-            &times;
-        </span>
+    <div class="modal-bg"></div>
+    <div class="modal-box">
+        <p style="text-align:right">
+        <button style="border:none;background:none;font-size:22px;color:#555;cursor:pointer;"
+                onClick="window.parent.postMessage({type: 'close_help'}, '*')">✖</button>
+        </p>
         <h3>Cómo usar la app</h3>
         <p>
         1. Cargá la secuencia de HA.<br>
@@ -206,6 +204,9 @@ if st.session_state.show_help:
         </p>
     </div>
     """, unsafe_allow_html=True)
+    # Botón de cierre manejado por Streamlit
+    if st.button("Cerrar ❌"):
+        st.session_state.show_help = False
 
 with st.sidebar:
     st.header("⚙️ Configuración")
@@ -359,6 +360,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
