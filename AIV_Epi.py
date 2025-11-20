@@ -174,7 +174,7 @@ if st.session_state.show_help:
         left: 50%;
         transform: translate(-50%, -50%);
         background: white;
-        padding: 25px;
+        padding: 20px;
         width: 60%;
         border-radius: 12px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.4);
@@ -346,6 +346,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
