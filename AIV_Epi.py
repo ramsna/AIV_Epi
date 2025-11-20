@@ -143,6 +143,39 @@ def cargar_csv(path_csv: str, cols):
 # =========================
 st.title("🧬 Clasificador de Influenza A (Beta)")
 
+import streamlit as st
+
+st.title("Mi App de Influenza")
+
+# Estado para abrir/cerrar el diálogo
+if "show_help" not in st.session_state:
+    st.session_state.show_help = False
+
+def open_help():
+    st.session_state.show_help = True
+
+def close_help():
+    st.session_state.show_help = False
+
+st.button("❓ Cómo usar la app", on_click=open_help)
+
+if st.session_state.show_help:
+    with st.dialog("Ayuda"):
+        st.write("""
+        ### ¿Cómo usar la aplicación?
+        1. Ingresa la id de tu secuencia (1,2..etc)
+        2. Ingresa el hospedero del cual se aislo.
+        2. Ingresa las coordenadas de lat y long
+        3. Ingresa tu secucencia de aminoacidos de HA (
+        
+        La plataforma mostrará:
+        - Subtipo de HA 
+        - Clasificación por hospedero  
+        - Motivos de patogenicidad  
+        """)
+
+        st.button("Entendido", on_click=close_help)
+
 with st.sidebar:
     st.header("⚙️ Configuración")
     modelos_dir = st.text_input(
@@ -295,6 +328,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
