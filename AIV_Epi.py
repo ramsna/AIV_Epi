@@ -207,8 +207,9 @@ if st.session_state.show_help:
     close_placeholder = st.empty()
     with close_placeholder.container():
         st.markdown('<div class="close-btn-container">', unsafe_allow_html=True)
-        if st.button("
-
+        if st.button("✖", key="cerrar_modal", help="Cerrar ventana de ayuda"):
+            st.session_state.show_help = False
+        st.markdown('</div>', unsafe_allow_html=True)
 
 with st.sidebar:
     st.header("⚙️ Configuración")
@@ -362,6 +363,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
