@@ -150,71 +150,34 @@ if "show_help" not in st.session_state:
 
 # Botón para abrir la ayuda
 if st.button("❓ Cómo usar la app"):
-    st.session_state.show_help = True
+ st.title("🧬 Clasificador de Influenza A (Beta)")
 
-# CSS del fondo, caja y botón transparente de cierre
-st.markdown("""
-<style>
-.modal-bg {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.35);
-    z-index: 998;
-}
-.modal-box {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 30px;
-    width: 60%;
-    max-width: 800px;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-    z-index: 999;
-}
-.overlay-click button {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    z-index: 1000;
-}
-</style>
-""", unsafe_allow_html=True)
+# ---------------------------
+# Ayuda simple arriba de la app
+# ---------------------------
+if "show_help" not in st.session_state:
+    st.session_state.show_help = True   # Se muestra la primera vez
 
 if st.session_state.show_help:
-    # Botón transparente que cubre toda la pantalla
-    overlay = st.empty()
-    with overlay.container():
-        st.markdown('<div class="overlay-click">', unsafe_allow_html=True)
-        if st.button(" ", key="cerrar_modal_click_cualquier_lado"):
-            st.session_state.show_help = False
-        st.markdown('</div>', unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown("### ℹ️ Cómo usar la aplicación")
+        st.markdown(
+            """
+            1. Ingresá el **ID de la muestra**.  
+            2. Escribí el **hospedero declarado**.  
+            3. Cargá las **coordenadas de latitud y longitud**.  
+            4. Pegá la **secuencia de aminoácidos de HA** (sin encabezado FASTA).  
+            5. Hacé clic en **“Clasificar y agregar al mapa/tabla”**.  
 
-    # Fondo gris + caja del modal
-    st.markdown("""
-        <div class="modal-bg"></div>
-        <div class="modal-box">
-            <h3>Cómo usar la app</h3>
-            <p>
-            1. Cargá la secuencia de HA.<br>
-            2. Seleccioná el modelo de clasificación.<br>
-            3. Ingresá coordenadas.<br>
-            4. Hacé clic en <b>Clasificar</b>.
-            </p>
-            <p><i>Clic en cualquier parte de la pantalla para cerrar esta ventana.</i></p>
-        </div>
-    """, unsafe_allow_html=True)
+            La app va a mostrar:
+            - Subtipo de HA predicho  
+            - Hospedero predicho  
+            - Patogenicidad (si es H5/H7)  
+            - Punto en el mapa con los datos de la muestra  
+            """
+        )
+        if st.button("Entendido", key="cerrar_ayuda"):
+            st.session_state.show_help = False
 
 with st.sidebar:
     st.header("⚙️ Configuración")
@@ -368,6 +331,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
