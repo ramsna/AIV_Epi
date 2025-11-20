@@ -14,6 +14,54 @@ import requests
 
 st.set_page_config(page_title="Clasificador Influenza A", layout="wide")
 
+if "show_help" not in st.session_state:
+    st.session_state.show_help = False
+
+st.button("❓ Cómo usar la app", on_click=lambda: st.session_state.__setitem__("show_help", True))
+
+# CSS del modal
+st.markdown("""
+    <style>
+    .modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        z-index: 999999;
+        width: 60%;
+    }
+    .modal-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.35);
+        z-index: 999998;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# Mostrar modal
+if st.session_state.show_help:
+    st.markdown('<div class="modal-bg"></div>', unsafe_allow_html=True)
+    st.markdown("""
+        <div class="modal">
+            <h3>Cómo usar la app</h3>
+            <p>
+            1. Cargá la secuencia de HA.<br>
+            2. Seleccioná el modelo de clasificación.<br>
+            3. Ingresá coordenadas.<br>
+            4. Hacé clic en <b>Clasificar</b>.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    st.button("Entendido", on_click=lambda: st.session_state.__setitem__("show_help", False))
 # =========================
 # Helpers de features y motivos
 # =========================
@@ -144,54 +192,7 @@ def cargar_csv(path_csv: str, cols):
 st.title("🧬 Clasificador de Influenza A (Beta)")
 
  
-if "show_help" not in st.session_state:
-    st.session_state.show_help = False
 
-st.button("❓ Cómo usar la app", on_click=lambda: st.session_state.__setitem__("show_help", True))
-
-# CSS del modal
-st.markdown("""
-    <style>
-    .modal {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background-color: white;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-        z-index: 999999;
-        width: 60%;
-    }
-    .modal-bg {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.35);
-        z-index: 999998;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-# Mostrar modal
-if st.session_state.show_help:
-    st.markdown('<div class="modal-bg"></div>', unsafe_allow_html=True)
-    st.markdown("""
-        <div class="modal">
-            <h3>Cómo usar la app</h3>
-            <p>
-            1. Cargá la secuencia de HA.<br>
-            2. Seleccioná el modelo de clasificación.<br>
-            3. Ingresá coordenadas.<br>
-            4. Hacé clic en <b>Clasificar</b>.
-            </p>
-        </div>
-    """, unsafe_allow_html=True)
-
-    st.button("Entendido", on_click=lambda: st.session_state.__setitem__("show_help", False))
 
 with st.sidebar:
     st.header("⚙️ Configuración")
@@ -345,6 +346,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
