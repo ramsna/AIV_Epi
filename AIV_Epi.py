@@ -143,6 +143,8 @@ def cargar_csv(path_csv: str, cols):
 # =========================
 st.title("🧬 Clasificador de Influenza A (Beta)")
 
+import streamlit as st
+
 # Estado del modal
 if "show_help" not in st.session_state:
     st.session_state.show_help = False
@@ -179,29 +181,29 @@ st.markdown("""
     position: absolute;
     top: 10px;
     right: 15px;
-    font-size: 20px;
+    font-size: 22px;
     cursor: pointer;
-    color: #333;
+    color: #444;
     font-weight: bold;
 }
 .close-btn:hover {
     color: red;
 }
-.center {
-    text-align: center;
-    margin-top: 20px;
+.center-button {
+    position: fixed;
+    top: calc(50% + 120px);
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# =======================
-# Renderizado del MODAL
-# =======================
+# =============== MODAL ===============
+
 if st.session_state.show_help:
 
-    # Contenedor vacío donde insertaremos el botón
-    boton_cerrar = st.empty()
-
+    # Renderizamos el modal
     st.markdown("""
         <div class="modal-bg"></div>
 
@@ -214,17 +216,18 @@ if st.session_state.show_help:
             3. Ingresá coordenadas.<br>
             4. Hacé clic en <b>Clasificar</b>.
             </p>
-
-            <div class="center">
-                [BOTON_AQUI]
-            </div>
-
         </div>
         """, unsafe_allow_html=True)
 
-    # Insertamos el botón Streamlit EN EL LUGAR DEL MODAL usando st.empty()
-    if boton_cerrar.button("Entendido"):
-        st.session_state.show_help = False
+    # Contenedor para el botón (posición controlada)
+    boton_container = st.empty()
+
+    with boton_container.container():
+        st.markdown('<div class="center-button">', unsafe_allow_html=True)
+        if st.button("Entendido", key="cerrar_modal"):
+            st.session_state.show_help = False
+        st.markdown('</div>', unsafe_allow_html=True)
+
 
 with st.sidebar:
     st.header("⚙️ Configuración")
@@ -378,6 +381,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
