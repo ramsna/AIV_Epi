@@ -143,21 +143,8 @@ def cargar_csv(path_csv: str, cols):
 # =========================
 st.title("🧬 Clasificador de Influenza A (Beta)")
 
-import streamlit as st
-
-import streamlit as st
-
-# Estado
-if "show_help" not in st.session_state:
-    st.session_state.show_help = False
-
-# Botón para abrir modal
-if st.button("❓ Cómo usar la app"):
-    st.session_state.show_help = True
-
-# CSS + HTML + JS del modal
 if st.session_state.show_help:
-    st.markdown(""
+    st.markdown("""
     <style>
     .modal-bg {
         position: fixed;
@@ -174,7 +161,7 @@ if st.session_state.show_help:
         left: 50%;
         transform: translate(-50%, -50%);
         background: white;
-        padding: 20px;
+        padding: 25px;
         width: 60%;
         border-radius: 12px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.4);
@@ -189,9 +176,38 @@ if st.session_state.show_help:
         color: #333;
         font-weight: bold;
     }
-    .clo
+    .close-btn:hover {
+        color: red;
+    }
+    .center {
+        text-align: center;
+        margin-top: 20px;
+    }
+    </style>
 
+    <div class="modal-bg"></div>
 
+    <div class="modal-box">
+        <span class="close-btn" onclick="document.querySelector('.modal-bg').remove(); document.querySelector('.modal-box').remove();">×</span>
+        <h3>Cómo usar la app</h3>
+        <p>
+        1. Cargá la secuencia de HA.<br>
+        2. Seleccioná el modelo de clasificación.<br>
+        3. Ingresá coordenadas.<br>
+        4. Hacé clic en <b>Clasificar</b>.
+        </p>
+
+        <div class="center">
+            <button onclick="document.querySelector('.modal-bg').remove(); document.querySelector('.modal-box').remove();" 
+                style="padding: 8px 18px; background:#2196F3; color:white; border:none; border-radius:6px; cursor:pointer;">
+                Entendido
+            </button>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Al cerrar el modal actualizamos el estado
+    st.session_state.show_help = False
 
 
 with st.sidebar:
@@ -346,6 +362,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
