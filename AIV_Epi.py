@@ -143,7 +143,6 @@ def cargar_csv(path_csv: str, cols):
 # =========================
 st.title("🧬 Clasificador de Influenza A (Beta)")
 
-import streamlit as st
 # Estado del modal
 if "show_help" not in st.session_state:
     st.session_state.show_help = False
@@ -161,7 +160,7 @@ st.markdown("""
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.35);
+    background: rgba(0,0,0,0.4);
     z-index: 998;
 }
 .modal-box {
@@ -170,31 +169,29 @@ st.markdown("""
     left: 50%;
     transform: translate(-50%, -50%);
     background: white;
-    padding: 25px;
-    width: 60%;
+    padding: 30px;
+    width: 55%;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     z-index: 999;
-}
-.close-btn-container {
     position: fixed;
-    top: calc(50% - 150px);
-    left: calc(50% + 260px);
-    transform: translate(-50%, -50%);
-    z-index: 1000;
+}
+.close-btn-pos {
+    position: fixed;
+    top: calc(50% - 150px);   /* mover cruz verticalmente */
+    left: calc(50% + 260px);  /* mover cruz horizontalmente */
+    z-index: 1001;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # ========================
-# Renderizado del modal
+# Render del modal
 # ========================
 if st.session_state.show_help:
 
-    # Fondo y caja del modal
     st.markdown("""
         <div class="modal-bg"></div>
-
         <div class="modal-box">
             <h3>Cómo usar la app</h3>
             <p>
@@ -206,15 +203,15 @@ if st.session_state.show_help:
         </div>
     """, unsafe_allow_html=True)
 
-    # Contenedor vacío para la cruz
+    # Botón Streamlit que parece estar adentro del modal
     close_container = st.empty()
 
-    # Insertamos el botón tipo "X" arriba del modal
     with close_container.container():
-        st.markdown('<div class="close-btn-container">', unsafe_allow_html=True)
-        if st.button("✖", key="cerrar_modal", help="Cerrar ventana"):
+        st.markdown('<div class="close-btn-pos">', unsafe_allow_html=True)
+        if st.button("✖", key="cerrar_modal", help="Cerrar"):
             st.session_state.show_help = False
-        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
 
 with st.sidebar:
     st.header("⚙️ Configuración")
@@ -368,6 +365,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
