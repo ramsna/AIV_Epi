@@ -138,12 +138,6 @@ def cargar_csv(path_csv: str, cols):
         return pd.DataFrame(columns=cols, dtype=str)
 
 
-# =========================
-# UI
-# =========================
-st.title("🧬 Clasificador de Influenza A (Beta)")
-
-# ---------------------------
 # Ayuda simple arriba de la app
 # ---------------------------
 st.title("🧬 Clasificador de Influenza A (Beta)")
@@ -329,6 +323,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
