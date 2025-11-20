@@ -143,9 +143,7 @@ def cargar_csv(path_csv: str, cols):
 # =========================
 st.title("🧬 Clasificador de Influenza A (Beta)")
 
-import streamlit as st
-
-# Estado
+# Estado del modal
 if "show_help" not in st.session_state:
     st.session_state.show_help = False
 
@@ -153,73 +151,80 @@ if "show_help" not in st.session_state:
 if st.button("❓ Cómo usar la app"):
     st.session_state.show_help = True
 
-# CSS + HTML + JS del modal
+# CSS del modal
+st.markdown("""
+<style>
+.modal-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.35);
+    z-index: 998;
+}
+.modal-box {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 25px;
+    width: 60%;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    z-index: 999;
+}
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 20px;
+    cursor: pointer;
+    color: #333;
+    font-weight: bold;
+}
+.close-btn:hover {
+    color: red;
+}
+.center {
+    text-align: center;
+    margin-top: 20px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# =======================
+# Renderizado del MODAL
+# =======================
 if st.session_state.show_help:
+
+    # Contenedor vacío donde insertaremos el botón
+    boton_cerrar = st.empty()
+
     st.markdown("""
-    <style>
-    .modal-bg {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.35);
-        z-index: 998;
-    }
-    .modal-box {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: white;
-        padding: 25px;
-        width: 60%;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-        z-index: 999;
-    }
-    .close-btn {
-        position: absolute;
-        top: 10px;
-        right: 15px;
-        font-size: 20px;
-        cursor: pointer;
-        color: #333;
-        font-weight: bold;
-    }
-    .close-btn:hover {
-        color: red;
-    }
-    .center {
-        text-align: center;
-        margin-top: 20px;
-    }
-    </style>
+        <div class="modal-bg"></div>
 
-    <div class="modal-bg"></div>
+        <div class="modal-box">
+            <span class="close-btn">×</span>
+            <h3>Cómo usar la app</h3>
+            <p>
+            1. Cargá la secuencia de HA.<br>
+            2. Seleccioná el modelo de clasificación.<br>
+            3. Ingresá coordenadas.<br>
+            4. Hacé clic en <b>Clasificar</b>.
+            </p>
 
-    <div class="modal-box">
-        <span class="close-btn" onclick="document.querySelector('.modal-bg').remove(); document.querySelector('.modal-box').remove();">×</span>
-        <h3>Cómo usar la app</h3>
-        <p>
-        1. Cargá la secuencia de HA.<br>
-        2. Seleccioná el modelo de clasificación.<br>
-        3. Ingresá coordenadas.<br>
-        4. Hacé clic en <b>Clasificar</b>.
-        </p>
+            <div class="center">
+                [BOTON_AQUI]
+            </div>
 
-        <div class="center">
-            <button onclick="document.querySelector('.modal-bg').remove(); document.querySelector('.modal-box').remove();" 
-                style="padding: 8px 18px; background:#2196F3; color:white; border:none; border-radius:6px; cursor:pointer;">
-                Entendido
-            </button>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
-    # Cuando se cierra el HTML, actualizamos estado
-    st.session_state.show_help = False
-
+    # Insertamos el botón Streamlit EN EL LUGAR DEL MODAL usando st.empty()
+    if boton_cerrar.button("Entendido"):
+        st.session_state.show_help = False
 
 with st.sidebar:
     st.header("⚙️ Configuración")
@@ -373,6 +378,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
