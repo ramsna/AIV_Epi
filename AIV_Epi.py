@@ -143,6 +143,17 @@ def cargar_csv(path_csv: str, cols):
 # =========================
 st.title("🧬 Clasificador de Influenza A (Beta)")
 
+import streamlit as st
+
+# Estado
+if "show_help" not in st.session_state:
+    st.session_state.show_help = False
+
+# Botón para abrir modal
+if st.button("❓ Cómo usar la app"):
+    st.session_state.show_help = True
+
+# CSS + HTML + JS del modal
 if st.session_state.show_help:
     st.markdown("""
     <style>
@@ -206,7 +217,7 @@ if st.session_state.show_help:
     </div>
     """, unsafe_allow_html=True)
 
-    # Al cerrar el modal actualizamos el estado
+    # Cuando se cierra el HTML, actualizamos estado
     st.session_state.show_help = False
 
 
@@ -362,6 +373,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
