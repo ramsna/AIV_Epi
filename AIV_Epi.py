@@ -222,11 +222,11 @@ if st.session_state.show_help:
     # Contenedor para el botón (posición controlada)
     boton_container = st.empty()
 
-    with boton_container.container():
-        st.markdown('<div class="center-button">', unsafe_allow_html=True)
-        if st.button("Entendido", key="cerrar_modal"):
-            st.session_state.show_help = False
-        st.markdown('</div>', unsafe_allow_html=True)
+        with boton_container.container():
+            st.markdown('<div class="center-button">', unsafe_allow_html=True)
+            if st.button("Entendido", key="cerrar_modal"):
+                st.session_state.show_help = False
+            st.markdown('</div>', unsafe_allow_html=True)
 
 
 with st.sidebar:
@@ -381,6 +381,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
