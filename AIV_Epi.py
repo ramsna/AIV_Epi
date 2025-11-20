@@ -143,6 +143,9 @@ def cargar_csv(path_csv: str, cols):
 # =========================
 st.title("🧬 Clasificador de Influenza A (Beta)")
 
+import streamlit as st
+
+# Estado de la ventana
 if "show_help" not in st.session_state:
     st.session_state.show_help = False
 
@@ -150,46 +153,62 @@ st.button("❓ Cómo usar la app", on_click=lambda: st.session_state.__setitem__
 
 # CSS del modal
 st.markdown("""
-    <style>
-    .modal {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background-color: white;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-        z-index: 999999;
-        width: 60%;
-    }
-    .modal-bg {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.35);
-        z-index: 999998;
-    }
-    </style>
+<style>
+.modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    z-index: 999999;
+    width: 60%;
+}
+.modal-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.35);
+    z-index: 999998;
+}
+.btn-container {
+    margin-top: 20px;
+    text-align: center;
+}
+</style>
 """, unsafe_allow_html=True)
 
 # Mostrar modal
 if st.session_state.show_help:
     st.markdown('<div class="modal-bg"></div>', unsafe_allow_html=True)
-    st.markdown("""
-        <div class="modal">
-            <h3>Cómo usar la app</h3>
-            <p>
-            1. Cargá la secuencia de HA.<br>
-            2. Seleccioná el modelo de clasificación.<br>
-            3. Ingresá coordenadas.<br>
-            4. Hacé clic en <b>Clasificar</b>.
-            </p>
+
+    # Insertamos un contenedor para el botón
+    modal_html = """
+    <div class="modal">
+        <h3>Cómo usar la app</h3>
+        <p>
+        1. Cargá la secuencia de HA.<br>
+        2. Seleccioná el modelo de clasificación.<br>
+        3. Ingresá coordenadas.<br>
+        4. Hacé clic en <b>Clasificar</b>.
+        </p>
+        <div class="btn-container">
+            <!-- Aquí va el botón real de Streamlit -->
         </div>
-    """, unsafe_allow_html=True)
-     st.button("Entendido", on_click=lambda: st.session_state.__setitem__("show_help", False))
+    </div>
+    """
+
+    st.markdown(modal_html, unsafe_allow_html=True)
+
+    # Ahora agregamos el botón exactamente debajo del marcador
+    st.markdown('<div class="btn-container">', unsafe_allow_html=True)
+    st.button("Entendido", on_click=lambda: st.session_state.__setitem__("show_help", False))
+    st.markdown('</div>', unsafe_allow_html=True)
+
 
 
 with st.sidebar:
@@ -344,6 +363,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
