@@ -152,7 +152,7 @@ if "show_help" not in st.session_state:
 if st.button("❓ Cómo usar la app"):
     st.session_state.show_help = True
 
-# CSS del fondo, caja y cruz
+# CSS del fondo, caja y botón transparente de cierre
 st.markdown("""
 <style>
 .modal-bg {
@@ -172,24 +172,36 @@ st.markdown("""
     background: white;
     padding: 30px;
     width: 60%;
+    max-width: 800px;
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     z-index: 999;
 }
-.close-btn-container {
+.overlay-click button {
     position: fixed;
-    /* ajustá estos valores si querés mover la cruz */
-    top: calc(50% - 155px);   /* un poquito debajo del borde superior */
-    left: calc(50% + 260px);  /* cerca del borde derecho */
-    transform: translate(-50%, -50%);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
     z-index: 1000;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# Mostrar modal
 if st.session_state.show_help:
-    # Fondo gris + caja
+    # Botón transparente que cubre toda la pantalla
+    overlay = st.empty()
+    with overlay.container():
+        st.markdown('<div class="overlay-click">', unsafe_allow_html=True)
+        if st.button(" ", key="cerrar_modal_click_cualquier_lado"):
+            st.session_state.show_help = False
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # Fondo gris + caja del modal
     st.markdown("""
         <div class="modal-bg"></div>
         <div class="modal-box">
@@ -200,16 +212,9 @@ if st.session_state.show_help:
             3. Ingresá coordenadas.<br>
             4. Hacé clic en <b>Clasificar</b>.
             </p>
+            <p><i>Clic en cualquier parte de la pantalla para cerrar esta ventana.</i></p>
         </div>
     """, unsafe_allow_html=True)
-
-    # Cruz que cierra el modal (botón de Streamlit)
-    close_placeholder = st.empty()
-    with close_placeholder.container():
-        st.markdown('<div class="close-btn-container">', unsafe_allow_html=True)
-        if st.button('✖', key='cerrar_modal', help='Cerrar'):
-            st.session_state.show_help = False
-        st.markdown('</div>', unsafe_allow_html=True)
 
 with st.sidebar:
     st.header("⚙️ Configuración")
@@ -363,6 +368,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
