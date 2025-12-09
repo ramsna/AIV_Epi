@@ -45,7 +45,7 @@ def calcular_DPC(sec: str) -> pd.DataFrame:
 
 def detectar_sitio_clivaje(secuencia: str, motivos: pd.DataFrame, ventana_max=14) -> str:
     """Busca motivos de clivaje antes de 'GLF' (posición P4..P14)."""
-    secuencia = (secuencia or "").upper()
+    secuencia = sec
     if motivos is None or motivos.empty:
         return "Tabla de motivos no cargada"
 
@@ -323,6 +323,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
