@@ -43,29 +43,55 @@ def calcular_DPC(sec: str) -> pd.DataFrame:
     return dpc_vec
 
 
-def detectar_sitio_clivaje(secuencia: str, motivos: pd.DataFrame, ventana_max=14) -> str:
-    """Busca motivos de clivaje antes de 'GLF' (posición P4..P14)."""
-    secuencia = secuencia.upper().replace("\n", "").strip()
+import re
+import pandas as pd
+
+def detectar_sitio_clivaje(secuencia: str, motivos: pd.DataFrame, ventana_max=14, tolerar_basico_final=True) -> str:
+    """Busca motivos de clivaje inmediatamente antes de 'GLF' (ventana P4..P14)."""
     if motivos is None or motivos.empty:
         return "Tabla de motivos no cargada"
 
-    motivos = motivos.copy()
-    motivos["Cleavage_Site"] = motivos["Cleavage_Site"].astype(str).str.strip()
-    motivos_set = set(motivos["Cleavage_Site"])
+    # 1) Normalizar secuencia
+    secuencia = re.sub(r'[^A-Z]', '', (secuencia or '').upper())  # quita \n, espacios, etc.
+
+    # 2) Normalizar tabla
+    m = motivos.copy()
+    m["Cleavage_Site"] = m["Cleavage_Site"].astype(str).str.strip().str.upper()
+
+    # índice rápido: motivo -> fila
+    idx = {row.Cleavage_Site: row for _, row in m.iterrows()}
 
     encontrados = []
     for i in range(len(secuencia) - 2):
-        if secuencia[i:i + 3] == "GLF":
+        if secuencia[i:i+3] == "GLF":
+            # ventana de P4..P14 (4 a 14 aa antes de GLF)
+            candidatos = []
             for size in range(4, ventana_max + 1):
                 inicio = i - size
-                if inicio >= 0:
-                    motivo = secuencia[inicio:i]
-                    if motivo in motivos_set:
-                        info = motivos[motivos["Cleavage_Site"] == motivo].iloc[0]
-                        encontrados.append(
-                            f"- Motivo: {motivo} | Subtipo: {info.get('Subtype','NA')} | Clado/Tipo: {info.get('Clade_or_Type','NA')}"
-                        )
+                if inicio < 0:
+                    break
+                motivo = secuencia[inicio:i]
+
+                # Coincidencia exacta
+                if motivo in idx:
+                    candidatos.append(motivo)
+                    continue
+
+                # Coincidencia flexible: permite un R/K extra al final
+                if tolerar_basico_final and motivo[:-1] in idx and motivo[-1] in "RK":
+                    candidatos.append(motivo)
+
+            if candidatos:
+                # prioriza el más largo (más específico)
+                motivo_sel = max(candidatos, key=len)
+                clave = motivo_sel if motivo_sel in idx else motivo_sel[:-1]
+                info = idx[clave]
+                encontrados.append(
+                    f"- Motivo: {motivo_sel} | Subtipo: {info.get('Subtype','NA')} | Clado/Tipo: {info.get('Clade_or_Type','NA')}"
+                )
+
     return "\n".join(encontrados) if encontrados else "Ningún motivo detectado"
+
 
 
 # =========================
@@ -323,6 +349,7 @@ with col_map:
             map_style=None
         ))
         st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+
 
 
 
