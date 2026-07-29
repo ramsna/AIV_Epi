@@ -273,7 +273,7 @@ with col_form:
 
             guardar_csv(st.session_state["resultados"], csv_path)
 
-            st.success("✅ Clasificación agregada y guardada en el CSV.")
+            st.success("✅ Classification completed and saved")
             with st.expander("Ver detalle de la clasificación agregada", expanded=True):
                 st.write(f"**ID:** {id_muestra}")
                 st.write(f"**Declared Host:** {hosp_decl}")
@@ -288,7 +288,7 @@ with col_form:
             st.error(f"Ocurrió un error al clasificar: {e}")
 
     st.markdown("---")
-    st.subheader("📄 Resultados (CSV en disco)")
+    st.subheader("📄 Results")
     st.dataframe(
         st.session_state["resultados"],
         use_container_width=True,
@@ -327,11 +327,11 @@ with col_map:
 
         tooltip = {
             "html": "<b>ID:</b> {ID} <br/>"
-                    "<b>Hosp. declarado:</b> {Hospedero} <br/>"
-                    "<b>Predicho:</b> {Predicho} <br/>"
-                    "<b>Subtipo:</b> {Subtipo} <br/>"
-                    "<b>Patogenicidad:</b> {Patogenicidad}",
-            "style": {"backgroundColor": "white", "color": "black"}
+            "<b>Declared host:</b> {Hospedero} <br/>"
+            "<b>Predicted host:</b> {Predicho} <br/>"
+            "<b>Subtype:</b> {Subtipo} <br/>"
+            "<b>Pathogenicity:</b> {Patogenicidad}",
+            "style": {"backgroundColor": "white", "color": "black"
         }
 
         st.pydeck_chart(pdk.Deck(
@@ -348,7 +348,7 @@ with col_map:
             layers=[],
             map_style=None
         ))
-        st.info("Aún no hay puntos para mostrar. Agregá una muestra con coordenadas.")
+        st.info("No points to display yet. Add a sample with coordinates.")
 
 
 
