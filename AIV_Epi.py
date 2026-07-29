@@ -331,9 +331,8 @@ with col_map:
             "<b>Predicted host:</b> {Predicho} <br/>"
             "<b>Subtype:</b> {Subtipo} <br/>"
             "<b>Pathogenicity:</b> {Patogenicidad}",
-            "style": {"backgroundColor": "white", "color": "black"
-        }
-
+            "style": {"backgroundColor": "white", "color": "black"}
+        
         st.pydeck_chart(pdk.Deck(
             initial_view_state=pdk.ViewState(
                 latitude=lat_center, longitude=lon_center, zoom=4
