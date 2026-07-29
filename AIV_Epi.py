@@ -12,7 +12,7 @@ import zipfile
 import gdown
 import requests  
 
-st.set_page_config(page_title="Clasificador Influenza A", layout="wide")
+st.set_page_config(page_title="Influenza A Virus Classifier", layout="wide")
 
 # =========================
 # Helpers de features y motivos
@@ -166,7 +166,7 @@ def cargar_csv(path_csv: str, cols):
 
 # Ayuda simple arriba de la app
 # ---------------------------
-st.title("🧬 Clasificador de Influenza A (Beta)")
+st.title("🧬 Influenza A Virus Classifier (Beta)")
 
 # ---------------------------
 # Ayuda compacta arriba de la app
@@ -183,12 +183,12 @@ if st.session_state.show_help:
                 """
                 <div style="font-size:0.80rem; line-height:1.25;">
                   <b>Cómo usar la aplicación</b><br>
-                  1. Ingresá el <b>ID</b> de la muestra.<br>
-                  2. Escribí el <b>hospedero declarado</b>.<br>
-                  3. Cargá <b>latitud</b> y <b>longitud</b>.<br>
-                  4. Pegá la <b>secuencia de HA</b> (sin encabezado).<br>
-                  5. Hacé clic en <b>“Clasificar y agregar al mapa/tabla”</b>.<br><br>
-                  La app mostrará el subtipo, hospedero predicho, patogenicidad (H5/H7) y la muestra en el mapa.
+                  1. Enter sample <b>ID</b>.<br>
+                  2. Enter <b>Host declared</b>.<br>
+                  3. Load <b>latitud</b> y <b>longitud</b>.<br>
+                  4. Paste the <b>HA sequence</b> (sin encabezado).<br>
+                  5. Click on <b>“Classify and add to Map/tabla”</b>.<br><br>
+                  The app will display the predicted influenza A subtype, host of origin, pathogenicity for H5 and H7 subtypes, and the sample’s location on a map.
                 </div>
                 """,
                 unsafe_allow_html=True
@@ -224,19 +224,19 @@ if "resultados" not in st.session_state:
 col_form, col_map = st.columns([0.38, 0.62], gap="large")
 
 with col_form:
-    st.subheader("📥 Datos de la muestra")
+    st.subheader("📥 Sample Data")
 
-    id_muestra = st.text_input("ID de muestra")
-    hosp_decl  = st.text_input("Hospedero declarado (texto libre)")
+    id_muestra = st.text_input("Sample ID")
+    hosp_decl  = st.text_input("Declared declared (free text)")
     c1, c2 = st.columns(2)
     with c1:
         lat = st.text_input("Latitud (ej: -34.9)")
     with c2:
         lon = st.text_input("Longitud (ej: -56.2)")
-    sec = st.text_area("Secuencia FASTA (sin encabezado)", height=140, placeholder="Pegá aquí la secuencia…")
+    sec = st.text_area("FASTA sequence (without header)", height=140, placeholder="Pegá aquí la secuencia…")
 
     puede_clasificar = modelos_ok and all([id_muestra.strip(), hosp_decl.strip(), lat.strip(), lon.strip(), sec.strip()])
-    btn = st.button("🔍 Clasificar y agregar al mapa/tabla", use_container_width=True, disabled=not puede_clasificar)
+    btn = st.button("🔍 Clssify and add to map/table", use_container_width=True, disabled=not puede_clasificar)
 
     if btn:
         try:
@@ -259,10 +259,10 @@ with col_form:
 
             nuevo = {
                 "ID": id_muestra.strip(),
-                "Hospedero": hosp_decl.strip(),
-                "Predicho": host_pred,
-                "Subtipo": subtipo,
-                "Patogenicidad": patogenicidad,
+                "Host": hosp_decl.strip(),
+                "Predicted Host": host_pred,
+                "Subtype": subtipo,
+                "Patogenicity": patogenicidad,
                 "Lat": f"{latf}",
                 "Lon": f"{lonf}",
             }
@@ -276,12 +276,12 @@ with col_form:
             st.success("✅ Clasificación agregada y guardada en el CSV.")
             with st.expander("Ver detalle de la clasificación agregada", expanded=True):
                 st.write(f"**ID:** {id_muestra}")
-                st.write(f"**Hospedero declarado:** {hosp_decl}")
-                st.write(f"**Hospedero predicho:** {host_pred}")
-                st.write(f"**Subtipo:** {subtipo}")
-                st.write(f"**Patogenicidad:** {patogenicidad}")
+                st.write(f"**Declared Host:** {hosp_decl}")
+                st.write(f"**Predicted host origin:** {host_pred}")
+                st.write(f"**Subtype:** {subtipo}")
+                st.write(f"**Patogenicity:** {patogenicidad}")
                 if motivos_det:
-                    st.write("**Motivos detectados:**")
+                    st.write("**Detected Motivs:**")
                     st.code(motivos_det, language="text")
 
         except Exception as e:
@@ -296,7 +296,7 @@ with col_form:
     )
 
 with col_map:
-    st.subheader("🗺️ Mapa")
+    st.subheader("🗺️ Map")
 
     df_map = st.session_state["resultados"].copy()
     # Convertir coords a float válidas
