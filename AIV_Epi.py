@@ -182,11 +182,11 @@ if st.session_state.show_help:
             st.markdown(
                 """
                 <div style="font-size:0.80rem; line-height:1.25;">
-                  <b>Cómo usar la aplicación</b><br>
+                  <b>How to use the app</b><br>
                   1. Enter sample <b>ID</b>.<br>
                   2. Enter <b>Host declared</b>.<br>
                   3. Load <b>latitud</b> y <b>longitud</b>.<br>
-                  4. Paste the <b>HA sequence</b> (sin encabezado).<br>
+                  4. Paste the <b>HA sequence</b> (without header).<br>
                   5. Click on <b>“Classify and add to Map/tabla”</b>.<br><br>
                   The app will display the predicted influenza A subtype, host of origin, pathogenicity for H5 and H7 subtypes, and the sample’s location on a map.
                 </div>
@@ -227,7 +227,7 @@ with col_form:
     st.subheader("📥 Sample Data")
 
     id_muestra = st.text_input("Sample ID")
-    hosp_decl  = st.text_input("Declared declared (free text)")
+    hosp_decl  = st.text_input("Host declared (free text)")
     c1, c2 = st.columns(2)
     with c1:
         lat = st.text_input("Latitud (ej: -34.9)")
